@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import sys
 import sentry_sdk
+from celery.schedules import crontab
 
 
 def environ_bool(key: str, default=0):
@@ -165,3 +166,73 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+
+#######################
+# == Cache Config === #
+#######################
+
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
+DJANGO_CACHE_REDIS_DB = os.environ.get("DJANGO_CACHE_REDIS_DB", 0)
+
+DJANGO_REDIS_URL = f"redis://{REDIS_HOST}/{DJANGO_CACHE_REDIS_DB}"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": DJANGO_REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+#######################
+# == Celery Config == #
+#######################
+DJANGO_ENABLE_CELERY = environ_bool("DJANGO_ENABLE_CELERY", 1)
+"""When disabled, runs as a single server."""
+
+# What celery uses to communicate to workers
+CELERY_BROKER_REDIS_DB = os.environ.get("CELERY_BROKER_REDIS_DB", 1)
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}/{CELERY_BROKER_REDIS_DB}"
+
+# What celery uses to store results of tasks
+CELERY_RESULT_BACKEND_REDIS_DB = os.environ.get("CELERY_RESULT_BROKER_REDIS_DB", 1)
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}/{CELERY_RESULT_BACKEND_REDIS_DB}"
+
+CELERY_TASK_ACKS_LATE = bool(int(os.environ.get("CELERY_TASK_ACKS_LATE", "1")))
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = bool(
+    int(os.environ.get("CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP", "1"))
+)
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# Custom schedules
+CELERY_BEAT_SCHEDULE = {}
+CELERY_BEAT_ENABLE_HEARTBEAT = environ_bool("CELERY_BEAT_ENABLE_HEARTBEAT", 0)
+
+if CELERY_BEAT_ENABLE_HEARTBEAT:
+    CELERY_BEAT_SCHEDULE["heartbeat"] = {
+        "task": "core.tasks.heartbeat_task",
+        "schedule": crontab(minute="*"),
+    }
+
+#########################
+# == Channels Config == #
+#########################
+CHANNELS_REDIS_DB = os.environ.get("CHANNELS_REDIS_DB", 2)
+CHANNELS_REDIS_URL = f"redis://{REDIS_HOST}/{CHANNELS_REDIS_DB}"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [CHANNELS_REDIS_URL],
+        },
+    },
+}

@@ -27,7 +27,17 @@ RUN python -m venv /py && \
 
 COPY ./requirements.txt /app/requirements.txt
 
-RUN /py/bin/pip install --no-cache-dir -r requirements.txt
+RUN /py/bin/pip install --no-cache-dir -r requirements.txt && \
+    apk del .tmp-build-deps && \
+    adduser \
+        --disabled-password \
+        --no-create-home \
+        django-user && \
+    mkdir -p /vol/web/media && \
+    mkdir -p /vol/web/static && \
+    chown -R django-user:django-user /vol && \
+    chown -R django-user:django-user /app && \
+    chmod -R 755 /vol
 
 COPY ./app /app/app
 
@@ -35,5 +45,6 @@ WORKDIR /app/app
 
 ENV PATH="/scripts:/app/.venv/bin:/root/.local/bin:/py/bin:/usr/bin:$PATH"
 ENV PYTHONPATH="/app/app:$PYTHONPATH"
+USER django-user
 
 CMD ["entrypoint.sh"]
