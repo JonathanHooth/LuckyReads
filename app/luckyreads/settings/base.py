@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+import sys
+import sentry_sdk
+
+
+def environ_bool(key: str, default=0):
+    return bool(int(os.environ.get(key, default)))
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -21,7 +29,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-uxcro00#)!-sj*t-v2+2pjse^g#x=3a9ha9lz3m3w4%=rp%oy4'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-changeme")
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = environ_bool("DJANGO_DEBUG", 0)
+"""Debug mode implements better logging."""
+
+DEV = os.environ.get("DEV", None) == "true"
+"""Dev mode installs additional development packages."""
+
+TESTING = sys.argv[1:2] == ["test"]
 
 # Application definition
 
@@ -33,8 +50,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest_framework',
+    "django_celery_beat",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "drf_spectacular",
+    "drf_standardized_errors",
+    "django_filters",
     'channels',
+    
+    'apps.core',
 
     'apps.users',
     'apps.books',
@@ -71,6 +95,40 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'luckyreads.wsgi.application'
 
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN", ""), send_default_pii=True, traces_sample_rate=1.0
+)
+
+
+##########################################
+# == Static Files Config =============== #
+##########################################
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.2/howto/static-files/
+S3_STORAGE_BACKEND = environ_bool("S3_STORAGE_BACKEND", 1) and not TESTING
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+# URL path to file
+STATIC_URL = "/files/static/"
+MEDIA_URL = "/files/media/public/"
+
+# Physical location in file system
+MEDIA_ROOT = "/vol/web/media/public"
+STATIC_ROOT = "/vol/web/static"
+
+# Media and static storage config
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {},
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "OPTIONS": {},
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

@@ -1,0 +1,46 @@
+# Taskfile docs: https://taskfile.dev/
+version: '3'
+
+
+tasks:
+  setup:
+    desc: 'Run initial setup for the repo using venv'
+    cmds:
+      - cp ./sample.env ./.env
+      - python3 -m venv ./.venv
+      - source ./.venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && pip install -r requirements.dev.txt
+  build:
+    desc: 'Build docker image if necessary'
+    sources:
+      - ./Dockerfile
+      - ./requirements.txt
+    run: when_changed
+    cmds:
+      - docker-compose --profile dev build
+    #  - task: build:docs:internal
+  dev:
+    desc: 'Run the servers config in dev mode'
+    deps:
+      - build
+    cmds:
+      - docker-compose --profile dev up
+
+  makemigrations:
+    desc: 'Create migration files if any models have changed'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py makemigrations {{.CLI_ARGS}}"
+      
+  makemigrations:check:
+    desc: 'Check if a migration file needs to be made, exits with non-zero code if one does need to be made'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py makemigrations --check"
+  migrate:
+    desc: 'Apply migrations to the database.'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py migrate {{.CLI_ARGS}}"

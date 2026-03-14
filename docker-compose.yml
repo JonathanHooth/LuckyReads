@@ -1,0 +1,230 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    container_name: lucky-reads
+    profiles:
+      - dev
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/app/app
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py collectstatic --no-input &&
+             python manage.py init_superuser &&
+             python -m uvicorn luckyreads.asgi:application --reload --host 0.0.0.0 --port 9000 --lifespan off"
+    env_file:
+      - .env
+    environment:
+      - PORT=9000
+      - DJANGO_BASE_URL=${DJANGO_BASE_URL:-http://localhost:9000}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-http://localhost:9000/admin/}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - DJANGO_SETTINGS_MODULE=luckyreads.settings.development
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:9000/health/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      start_interval: 5s
+  
+  postgres:
+    image: postgres:15-alpine
+    command: -c 'max_connections=200'
+    restart: unless-stopped
+    profiles:
+      - dev
+    volumes:
+      - postgres-luckyreads-dev:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdatabase
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-luckyreads-dev:/data
+    profiles:
+      - dev
+
+  celery:
+    build:
+      context: .
+      args:
+        - DEV=true
+    restart: unless-stopped
+    profiles:
+      - dev
+    user: django-user
+    command: ["celery", "-A", "luckyreads", "worker", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app
+      - static-luckyreads-dev:/vol/web
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      app:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  celerybeat:
+    build:
+      context: .
+      args:
+        - DEV=true
+    user: django-user
+    restart: unless-stopped
+    profiles:
+      - dev
+    command:
+      [
+        "celery",
+        "-A",
+        "luckyreads",
+        "beat",
+        "--loglevel=info",
+        "--scheduler",
+        "django_celery_beat.schedulers:DatabaseScheduler",
+      ]
+    volumes:
+      - ./app:/app/app
+      - static-luckyreads-dev:/vol/web
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      app:
+        condition: service_healthy
+      celery:
+        condition: service_started
+    env_file:
+      - .env
+
+  
+  coverage:
+    image: nginx
+    restart: unless-stopped
+    attach: false
+    profiles:
+      - dev
+    ports:
+      - "8083:80"
+    volumes:
+      - ./app/htmlcov:/usr/share/nginx/html
+  
+
+  mail:
+    # Docs: https://mailpit.axllent.org/docs/install/docker/
+    # Repo: https://github.com/axllent/mailpit?tab=readme-ov-file
+    image: axllent/mailpit
+    container_name: luckyreads-mail
+    restart: unless-stopped
+    volumes:
+      - mail-luckyreads-dev:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    profiles:
+      - dev
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  
+  pgadmin:
+    # Config adapted from: https://stackoverflow.com/a/77519799/10914922
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    profiles:
+      - dev
+    attach: false
+    ports:
+      - "8888:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=changeme
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    user: root
+    depends_on:
+      - postgres
+    entrypoint: /bin/sh -c "chmod 600 /pgpass; /entrypoint.sh;"
+    volumes:
+      - pgadmin-luckyreads-dev:/var/lib/pgadmin
+      - ./_pg_scripts:/root/scripts
+    configs:
+      - source: servers.json
+        target: /pgadmin4/servers.json
+      - source: pgpass
+        target: /pgpass
+    
+  proxy:
+    build:
+      context: ./deploy/proxy/
+    restart: unless-stopped
+    profiles:
+      - dev
+    ports:
+      - 8080:8080
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - static-luckyreads-dev:/vol/web
+    environment:
+      - SERVER_URI=app:9000
+      - SERVER_REPLICA_URI=app:9000
+      - PROXY_DOCS_URI=${PROXY_DOCS_URI:-'0.0.0.0:80'}
+      - S3_STORAGE_BUCKET_NAME=''
+      - ENV=DEV
+      - DELAY=0s
+
+
+volumes:
+  postgres-luckyreads-dev:
+  static-luckyreads-dev:
+  mail-luckyreads-dev:
+  pgadmin-luckyreads-dev:
+  redis-luckyreads-dev:
+
+
+configs:
+  pgpass:
+    content: postgres:5432:*:devuser:devpass
+  servers.json:
+    content: |
+      {
+        "Servers": {
+            "1": {
+                "Group": "Servers",
+                "Name": "Docker",
+                "Host": "postgres",
+                "Port": 5432,
+                "MaintenanceDB": "devdatabase",
+                "Username": "devuser",
+                "PassFile": "/pgpass",
+                "SSLMode": "prefer",
+                "Favorite": true
+            }
+        }
+      }
