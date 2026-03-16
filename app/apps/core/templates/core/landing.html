@@ -1,0 +1,32 @@
+{% extends 'base.html' %} {% load static %} {% block head %}
+<title>Home</title>
+<link
+  rel="stylesheet"
+  href="{% static 'css/landing.css' %}"
+/>
+<link
+  rel="stylesheet"
+  href="{% static 'css/navbar.css' %}"
+/>
+<link
+  rel="stylesheet"
+  href="{% static 'css/sampleLayout.css' %}"
+/>
+<link
+  rel="stylesheet"
+  href="{% static 'css/layout.css' %}"
+/>
+<link
+  rel="stylesheet"
+  href="{% static 'css/dashboard.css' %}"
+/>
+{% endblock %} {% block body %}
+<div class="landing-container">
+  <div class="sidebar-container">
+    <div class="sidebar-title sidebar-text">
+      <div class="sidebar-square"></div>
+      Luckyreads
+    </div>
+  </div>
+  {% endblock %}
+</div>

@@ -1,0 +1,83 @@
+map $ENV $media_target {
+  default    "http://app_upstream/files/media";
+  DEV        "http://app_upstream/files/media";
+  PROD       "https://$S3_STORAGE_BUCKET_NAME.s3.amazonaws.com";
+}
+
+map $ENV $proxy_host {
+  default    $http_host;
+  DEV        $http_host;
+  PROD       $host;
+}
+
+gzip on;
+
+upstream app_upstream {
+  server "$SERVER_URI";
+  server "$SERVER_REPLICA_URI";
+}
+
+server {
+  listen 8080;
+  
+  resolver 127.0.0.11 valid=5s;
+  
+  # Pass media files directly to S3
+  # location ~ ^/files/media/(.*)$ {
+  #   proxy_intercept_errors  on;
+  #   proxy_redirect          off;
+  #   proxy_hide_header       X-Amz-Id-2;
+  #   proxy_hide_header       X-Amz-Request-Id;
+    
+  #   proxy_pass $media_target/$1;
+  # }
+  
+  # Pass static files to mounted volume
+  location ~ ^/files/static/(.*)$ {
+    alias "/vol/web/static/$1";
+  }
+  
+  # Docs go to S3 bucket the files were uploaded to
+  location /docs {
+    proxy_intercept_errors  on;
+    proxy_redirect          off;
+    proxy_hide_header       X-Amz-Id-2;
+    proxy_hide_header       X-Amz-Request-Id;
+    
+    proxy_pass              "$PROXY_DOCS_URI";
+  }
+
+  # WebSockets
+  location /ws/ {
+      proxy_pass http://app_upstream;
+
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "Upgrade";
+
+      proxy_set_header Host $proxy_host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      proxy_read_timeout 3600s;
+      proxy_send_timeout 3600s;
+  }
+  
+  # Pass everything else to Django
+  location / {
+    proxy_pass                 http://app_upstream;
+    
+    proxy_set_header           Host "$proxy_host";
+    proxy_set_header           X-Forwarded-For "$proxy_add_x_forwarded_for";
+    proxy_pass_header          Token;
+    
+    client_max_body_size       32M;
+    include                    /etc/nginx/uwsgi_params;
+    proxy_send_timeout         120s;
+    proxy_read_timeout         300s;
+    proxy_connect_timeout      60s;
+    
+    proxy_buffer_size          128k;
+    proxy_buffers              4 256k;
+    proxy_busy_buffers_size    256k;
+  }
+}

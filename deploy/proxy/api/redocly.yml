@@ -1,0 +1,9 @@
+apis:
+  core@v1:
+    root: ./output.swagger.yml
+    rules:
+      no-ambiguous-paths: error
+    theme:
+      openapi:
+        expandResponses: '200'
+        expandDefaultResponse: true
