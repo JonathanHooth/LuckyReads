@@ -12,6 +12,8 @@ services:
       - "9000:9000"
     volumes:
       - ./app:/app/app
+      - ./scripts:/scripts
+      - static-luckyreads-dev:/vol/web
     command: >
       sh -c "
       python manage.py wait_for_db &&
@@ -31,12 +33,12 @@ services:
       - postgres
       - redis
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:9000/health/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-      start_interval: 5s
+      test: ["CMD-SHELL", "/scripts/healthcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+      start_interval: 15s
   
   postgres:
     image: postgres:15-alpine

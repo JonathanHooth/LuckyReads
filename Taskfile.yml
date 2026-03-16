@@ -9,6 +9,7 @@ tasks:
       - cp ./sample.env ./.env
       - python3 -m venv ./.venv
       - source ./.venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt && pip install -r requirements.dev.txt
+
   build:
     desc: 'Build docker image if necessary'
     sources:
@@ -18,12 +19,28 @@ tasks:
     cmds:
       - docker-compose --profile dev build
     #  - task: build:docs:internal
+
+  build:network:
+    sources:
+      - ./Dockerfile
+      - ./requirements.txt
+    run: when_changed
+    cmds:
+      - docker-compose -f docker-compose.network.yml build
+  
   dev:
     desc: 'Run the servers config in dev mode'
     deps:
       - build
     cmds:
       - docker-compose --profile dev up
+
+  network:
+    desc: 'Run server in network mode'
+    deps:
+      - build:network
+    cmds:
+      - docker-compose -f docker-compose.network.yml up
 
   makemigrations:
     desc: 'Create migration files if any models have changed'
@@ -44,3 +61,47 @@ tasks:
       - build
     cmds:
       - docker-compose run --rm app sh -c "python manage.py migrate {{.CLI_ARGS}}"
+
+  shell:
+    desc: 'Open interactive django shell'
+    interactive: true
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py shell"
+
+  shell:redis:
+    desc: 'Open a new shell using redis-cli'
+    cmds:
+      - docker-compose run --rm redis sh -c "redis-cli -h redis -p 6379"
+
+  shell:db:
+    desc: "Open a new database shell using django's dbshell"
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "python manage.py dbshell"
+  shell:debugsql:
+    desc: 'Django interactive shell that shows db queries made for executed code, provided by django-debug-toolbar'
+    deps:
+      - build
+    cmds:
+      - docker-compose run --rm app sh -c "if [ $DJANGO_ENABLE_DEBUG_TOOLBAR != 1 ]; then echo \"Error, DJANGO_ENABLE_DEBUG_TOOLBAR must be enabled\" && exit 1; fi"
+      - docker-compose run --rm app sh -c "python manage.py debugsqlshell"
+
+  clean:
+    desc: 'Stop containers and remove volumes'
+    cmds:
+      - docker-compose --profile dev down --remove-orphans -v
+
+  clean:network:
+    desc: 'Stop containers and remove volumes'
+    cmds:
+      - docker-compose -f docker-compose.network.yml down --remove-orphans -v
+  
+  show_urls:
+  desc: 'List available urls in django'
+  deps:
+    - build
+  cmds:
+    - docker-compose run --rm app sh -c "python manage.py show_urls"

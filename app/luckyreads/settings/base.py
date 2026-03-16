@@ -25,7 +25,6 @@ def environ_bool(key: str, default=0):
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -82,7 +81,9 @@ ROOT_URLCONF = 'luckyreads.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # os.path.join(BASE_DIR, "core/templates"),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,6 +112,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+
+
 # URL path to file
 STATIC_URL = "/files/static/"
 MEDIA_URL = "/files/media/public/"
@@ -130,6 +133,12 @@ STORAGES = {
         "OPTIONS": {},
     },
 }
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -165,8 +174,34 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+#STATIC_URL = 'static/'
 
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+POSTGRES_MAX_POOL_SIZE = int(os.environ.get("POSTGRES_MAX_POOL_SIZE", "0"))
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "PORT": os.environ.get("POSTGRES_PORT"),
+        "NAME": os.environ.get("POSTGRES_NAME"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "DISABLE_SERVER_SIDE_CURSORS": True,  # Fixes "InvalidCursorName" issues in prod
+        "CONN_MAX_AGE": 0,
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": {},
+    }
+}
+
+if POSTGRES_MAX_POOL_SIZE > 0:
+    DATABASES["default"]["OPTIONS"]["pool"] = {
+        "min_size": 1,
+        "max_size": POSTGRES_MAX_POOL_SIZE,
+        "timeout": 60,
+    }
 
 
 #######################

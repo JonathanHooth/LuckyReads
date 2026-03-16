@@ -1,0 +1,197 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DEV=true
+    container_name: luckyreads-app-network
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/scripts
+      - static-luckyreads-dev:/vol/web
+    user: "1000:1000"
+    env_file:
+      - .env
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py collectstatic --no-input &&
+             python manage.py init_superuser &&
+             python -m uvicorn luckyreads.asgi:application --reload --host 0.0.0.0 --port 9000 --lifespan off"
+    environment:
+      - PORT=9000
+      - CELERY_BROKER_URL=redis://luckyreads-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://luckyreads-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://luckyreads-network-redis:6379/1
+      - POSTGRES_HOST=postgres-luckyreads-network
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000
+      - DJANGO_BASE_URL=${DJANGO_BASE_URL:-http://localhost:8080}
+      - WORKER_COUNT=${WORKER_COUNT:-10}
+      - REDIS_HOST=${REDIS_HOST:-luckyreads-network-redis}
+      - DJANGO_SETTINGS_MODULE=luckyreads.settings.network
+    depends_on:
+      - postgres
+    networks:
+      - cluster
+    healthcheck:
+      test: ["CMD-SHELL", "/scripts/healthcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+      start_interval: 15s
+
+  postgres:
+    image: postgres:15-alpine
+    command: -c 'max_connections=200'
+    container_name: postgres-luckyreads-network
+    volumes:
+      - postgres-luckyreads-dev:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=devdatabase
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=devpass
+    networks:
+      - cluster
+
+  redis:
+    image: redis:alpine
+    container_name: luckyreads-network-redis
+    volumes:
+      - redis-luckyreads-dev:/data
+    networks:
+      - cluster
+
+  celery:
+    build:
+      context: .
+      # args:
+      #   - DEV=true
+    restart: unless-stopped
+    user: django-user
+    command: ["celery", "-A", "luckyreads", "worker", "--loglevel=info"]
+    volumes:
+      - ./app:/app/app
+      - static-luckyreads-dev:/vol/web
+    # depends_on:
+    #   redis:
+    #     condition: service_started
+    #   postgres:
+    #     condition: service_started
+    #   app:
+    #     condition: service_healthy
+    depends_on:
+      - redis
+      - postgres
+      - app
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://luckyreads-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://luckyreads-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://luckyreads-network-redis:6379/1
+      - POSTGRES_HOST=postgres-luckyreads-network
+      - DJANGO_SETTINGS_MODULE=luckyreads.settings.network
+    networks:
+      - cluster
+
+  celerybeat:
+    build:
+      context: .
+      # args:
+      #   - DEV=true
+    user: django-user
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "luckyreads",
+        "beat",
+        "--loglevel=info",
+        "--scheduler",
+        "django_celery_beat.schedulers:DatabaseScheduler",
+      ]
+    volumes:
+      - ./app:/app/app
+      - static-luckyreads-dev:/vol/web
+    # depends_on:
+    #   redis:
+    #     condition: service_started
+    #   postgres:
+    #     condition: service_started
+    #   app:
+    #     condition: service_healthy
+    #   celery:
+    #     condition: service_started
+    depends_on:
+      - redis
+      - postgres
+      - celery
+      - app
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://luckyreads-network-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://luckyreads-network-redis:6379/0
+      - DJANGO_REDIS_URL=redis://luckyreads-network-redis:6379/1
+      - POSTGRES_HOST=postgres-luckyreads-network
+      - DJANGO_SETTINGS_MODULE=luckyreads.settings.network
+    networks:
+      - cluster
+
+  mail:
+    # Docs: https://mailpit.axllent.org/docs/install/docker/
+    # Repo: https://github.com/axllent/mailpit?tab=readme-ov-file
+    image: axllent/mailpit
+    container_name: mail
+    restart: unless-stopped
+    volumes:
+      - mail-luckyreads-dev:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    profiles:
+      - dev
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  proxy:
+    build:
+      context: ./deploy/proxy/
+    container_name: luckyreads-network-proxy
+    ports:
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - cluster
+    # depends_on:
+    #   app:
+    #     condition: service_healthy
+    depends_on:
+      - app
+    volumes:
+      # - static-luckyreads-network:/vol/web
+      # - static-luckyreads:/vol/web
+      - static-luckyreads-dev:/vol/web
+    environment:
+      - SERVER_URI=luckyreads-app-network:9000
+      - PROXY_DOCS_URI=${PROXY_DOCS_URI:-''}
+      - SERVER_REPLICA_URI=luckyreads-app-network:9000
+      - S3_STORAGE_BUCKET_NAME=${S3_STORAGE_BUCKET_NAME:-'testbucket'}
+      - ENV=DEV
+      - DELAY=10s
+
+volumes:
+  postgres-luckyreads-dev:
+  redis-luckyreads-dev:
+  static-luckyreads-dev:
+  mail-luckyreads-dev:
+
+networks:
+  cluster:
+    name: luckyreads_cluster
