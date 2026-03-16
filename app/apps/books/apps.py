@@ -5,4 +5,4 @@ class BooksConfig(AppConfig):
     name = 'apps.books'
 
     def ready(self):
-        import signals
+        import apps.books.signals

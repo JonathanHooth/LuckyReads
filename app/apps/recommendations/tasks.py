@@ -2,8 +2,8 @@ import networkx as nx
 from celery import shared_task
 from django.db import transaction
 
-from books.models import Review
-from .models import BookRecommendation, BuddyRecommendation
+from apps.books.models import Review
+from apps.recommendations.models import BookRecommendation, BuddyRecommendation
 
 _RATING_THRESHOLD = 3
 
