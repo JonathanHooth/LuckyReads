@@ -94,6 +94,20 @@ And finally, to clean up all the docker containers and clear the database:
 docker-compose --profile dev down --remove-orphans -v
 ```
 
+### Frontend (Vite + React)
+
+The SPA lives in `frontend/`. Run it on the host alongside Docker (separate terminal):
+
+```sh
+cd frontend
+npm ci          # or: npm install
+npm run dev
+```
+
+Vite prints a local URL (by default [http://localhost:5173](http://localhost:5173)). Use `npm run build` for a production bundle and `npm run lint` for ESLint.
+
+Optional: install [Node.js](https://nodejs.org/) (LTS is fine) if you do not already have `npm`.
+
 ## Admin Dashboard
 
 You can log into the admin dashboard by going to the route `/admin` and using the following credentials:
@@ -155,6 +169,7 @@ Running the server in `dev` mode will start up the following services:
 
 | Service            | Description                                              | Link                                           |
 | ------------------ | -------------------------------------------------------- | ---------------------------------------------- |
+| Vite dev server    | React frontend (`npm run dev` in `frontend/`)            | <http://localhost:5173/>                       |
 | Django Server      | Main development server                                  | <http://localhost:8080/>                       |
 | API Docs           | REST API documentation created by Swagger/OpenAPI        | <http://localhost:8080/api/docs/>              |
 | OAuth API Docs     | OAuth REST API documentation created by django-allauth   | <http://localhost:8080/api/oauth/openapi.html> |
