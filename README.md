@@ -26,10 +26,12 @@ Optional:
 
 
 # Copy env variables
+```sh
 cp sample.env .env
-
+```
 
 # Start docker compose
+```sh
 docker-compose --profile dev up --build
 ```
 
