@@ -142,10 +142,11 @@ If you have Taskfile installed, you can use the following:
 | `task network`                     | Starts the server in "network" mode                              |
 | `task makemigrations`              | Create database migration files                                  |
 | `task migrate`                     | Apply migration files to the database                            |
+| `task populate`                    | Add data to the database (for testing)                           |
 | `task shell`                       | Start a new Django interactive shell                             |
 | `task shell:redis`                 | Starts a new interactive redis shell using redis-cli             |
 | `task shell:db`                    | Starts a new interactive postgres shell using Django's dbshell   |
-| `task show_urls`                   | Show all available urls for the server, and their reverse labels | |
+| `task show_urls`                   | Show all available urls for the server, and their reverse labels |
 | `task down`                        | Stop all docker containers created by `task dev`                 |
 | `task clean`                       | Stop containers and remove volumes created by `task dev`         |
 
