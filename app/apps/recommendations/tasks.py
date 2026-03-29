@@ -62,7 +62,7 @@ def update_book_recommendations(user_id: int) -> None:
         int(node.split('_')[1]): score
         for node, score in scores.items()
         if node.startswith('book_')
-        and int(node.split('_')[1] not in books_on_shelf)
+        and int(node.split('_')[1]) not in books_on_shelf
     }
 
     with transaction.atomic():
