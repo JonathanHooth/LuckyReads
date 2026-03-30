@@ -63,9 +63,9 @@ export default function Login() {
           </label>
 
           <div className="login-meta">
-            <button className="login-link" type="button">
+            <Link className="login-link" to="/forgot-password">
               Forgot password?
-            </button>
+            </Link>
           </div>
 
           {error ? (
@@ -85,7 +85,7 @@ export default function Login() {
 
         <p className="login-footer">
           Don&apos;t have an account yet?{" "}
-          <Link className="login-footer-link" to="/home">
+          <Link className="login-footer-link" to="/onboarding">
             Create Reader Profile
           </Link>
         </p>
