@@ -1,54 +1,94 @@
+import { useState } from "react";
 // change to absolute import
-import BookCard from "../../components/BookCard";
+import Navbar from "../../components/Navbar/Navbar";
+import BookCard from "../../components/BookCard/BookCard";
 import "./MyShelf.css";
-//navbar
-//pfp name
-// all books, reading, read, want to read
 
 export default function MyShelf() {
-    const books = [
+    const [activeTab, setActiveTab] = useState("All Books");
+    // list of Books for MVP
+    const [books, setBooks] = useState([
         {
-            title: "Book Title",
-            author: "Author Name",
-            coverUrl:
-                "https://covers.openlibrary.org/b/isbn/9780385472579-M.jpg",
+            id: 1,
+            isbn: "9780060935467",
+            title: "To Kill a Mockingbird",
+            author: "Harper Lee",
+            status: "Want to Read",
+        },
+        {
+            id: 2,
+            isbn: "9780141439518",
+            title: "Pride and Prejudice",
+            author: "Jane Austen",
             status: "Reading",
         },
         {
-            title: "Book Title",
-            author: "Author Name",
-            coverUrl:
-                "https://covers.openlibrary.org/b/isbn/9780385472579-M.jpg",
+            id: 3,
+            isbn: "9780064404990",
+            title: "Lion, the Witch, and the Wardrobe",
+            author: "C.S. Lewis",
             status: "Reading",
         },
         {
-            title: "Book Title",
-            author: "Author Name",
-            coverUrl:
-                "https://covers.openlibrary.org/b/isbn/9780385472579-M.jpg",
-            status: "Reading",
+            id: 4,
+            isbn: "9780743273565",
+            title: "The Great Gatsby",
+            author: "F. Scott Fitzgerald",
+            status: "Read",
         },
         {
-            title: "Book Title",
-            author: "Author Name",
-            coverUrl:
-                "https://covers.openlibrary.org/b/isbn/9780385472579-M.jpg",
-            status: "Reading",
+            id: 5,
+            isbn: "9780553212471",
+            title: "Frankenstein",
+            author: "Mary Shelley",
+            status: "Read",
         },
-    ];
+    ]);
+    // TODO: add placeholder image for books without covers?
+    const booksWithCovers = books.map((book) => ({
+        ...book,
+        coverUrl: book.isbn
+            ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg`
+            : undefined,
+    }));
+
+    const filteredBooks =
+        activeTab === "All Books"
+            ? booksWithCovers
+            : booksWithCovers.filter((book) => book.status === activeTab);
     return (
         <div className="my-shelf">
+            <Navbar />
             <div className="my-shelf-container">
-                <h1 className="profile-name">Jane Doe</h1>
+                <h1 className="profile-name">Jane Doe's Shelf</h1>
                 <div className="shelf-tabs">
-                    <button className="shelf-tab">All</button>
-                    <button className="shelf-tab">Reading</button>
-                    <button className="shelf-tab">Read</button>
-                    <button className="shelf-tab">Want to Read</button>
+                    <button
+                        className={`shelf-tab ${activeTab === "All Books" ? "active" : ""}`}
+                        onClick={() => setActiveTab("All Books")}
+                    >
+                        All Books
+                    </button>
+                    <button
+                        className={`shelf-tab ${activeTab === "Reading" ? "active" : ""}`}
+                        onClick={() => setActiveTab("Reading")}
+                    >
+                        Reading
+                    </button>
+                    <button
+                        className={`shelf-tab ${activeTab === "Read" ? "active" : ""}`}
+                        onClick={() => setActiveTab("Read")}
+                    >
+                        Read
+                    </button>
+                    <button
+                        className={`shelf-tab ${activeTab === "Want to Read" ? "active" : ""}`}
+                        onClick={() => setActiveTab("Want to Read")}
+                    >
+                        Want to Read
+                    </button>
                 </div>
-
                 <div className="book-grid">
-                    {books.map((book) => (
+                    {filteredBooks.map((book) => (
                         <BookCard
                             key={book.title}
                             title={book.title}
