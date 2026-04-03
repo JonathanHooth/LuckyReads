@@ -7,7 +7,7 @@ import "./MyShelf.css";
 export default function MyShelf() {
     const [activeTab, setActiveTab] = useState("All Books");
     // list of Books for MVP
-    const [books] = useState([
+    const [books, setBooks] = useState([
         {
             id: 1,
             isbn: "9780060935467",
