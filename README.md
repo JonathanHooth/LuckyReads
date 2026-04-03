@@ -110,6 +110,43 @@ Vite prints a local URL (by default [http://localhost:5173](http://localhost:517
 
 Optional: install [Node.js](https://nodejs.org/) (LTS is fine) if you do not already have `npm`.
 
+### Verifying Frontend ↔ Backend Connection
+
+For local development, the frontend uses the Vite dev server and proxies `/api` requests to the Django backend.
+
+Start the backend in one terminal:
+
+```sh
+docker compose --profile dev up --build
+```
+
+Start the frontend in another terminal:
+
+```sh
+cd frontend
+npm run dev
+```
+
+Verify the backend health endpoint directly:
+
+```sh
+curl http://127.0.0.1:9000/api/health/
+```
+
+Verify the frontend dev server proxy:
+
+```sh
+curl http://localhost:5173/api/health/
+```
+
+Both requests should return:
+
+```json
+{"status": 200, "message": "Systems operational."}
+```
+
+If the frontend is running in the browser, the app should also be able to reach the backend through the same `/api` path used in local development.
+
 ## Admin Dashboard
 
 You can log into the admin dashboard by going to the route `/admin` and using the following credentials:
