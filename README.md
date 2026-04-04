@@ -110,6 +110,43 @@ Vite prints a local URL (by default [http://localhost:5173](http://localhost:517
 
 Optional: install [Node.js](https://nodejs.org/) (LTS is fine) if you do not already have `npm`.
 
+### Verifying Frontend ↔ Backend Connection
+
+For local development, the frontend uses the Vite dev server and proxies `/api` requests to the Django backend.
+
+Start the backend in one terminal:
+
+```sh
+docker compose --profile dev up --build
+```
+
+Start the frontend in another terminal:
+
+```sh
+cd frontend
+npm run dev
+```
+
+Verify the backend health endpoint directly:
+
+```sh
+curl http://127.0.0.1:9000/api/health/
+```
+
+Verify the frontend dev server proxy:
+
+```sh
+curl http://localhost:5173/api/health/
+```
+
+Both requests should return:
+
+```json
+{"status": 200, "message": "Systems operational."}
+```
+
+If the frontend is running in the browser, the app should also be able to reach the backend through the same `/api` path used in local development.
+
 ## Admin Dashboard
 
 You can log into the admin dashboard by going to the route `/admin` and using the following credentials:
@@ -158,10 +195,11 @@ If you have Taskfile installed, you can use the following:
 | `task network`                     | Starts the server in "network" mode                              |
 | `task makemigrations`              | Create database migration files                                  |
 | `task migrate`                     | Apply migration files to the database                            |
+| `task populate`                    | Add data to the database (for testing)                           |
 | `task shell`                       | Start a new Django interactive shell                             |
 | `task shell:redis`                 | Starts a new interactive redis shell using redis-cli             |
 | `task shell:db`                    | Starts a new interactive postgres shell using Django's dbshell   |
-| `task show_urls`                   | Show all available urls for the server, and their reverse labels | |
+| `task show_urls`                   | Show all available urls for the server, and their reverse labels |
 | `task down`                        | Stop all docker containers created by `task dev`                 |
 | `task clean`                       | Stop containers and remove volumes created by `task dev`         |
 

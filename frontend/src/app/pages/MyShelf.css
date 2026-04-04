@@ -1,0 +1,46 @@
+.my-shelf {
+    min-height: 100vh;
+}
+
+.my-shelf-container {
+    width: min(1200px, 90%);
+    margin: 40px auto;
+}
+
+.profile-name {
+    margin: 0 0 32px 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: #3f4a34;
+}
+
+.shelf-tabs {
+    border: 1px solid #ddd8c9;
+    padding: 4px;
+    border-radius: 18px;
+    margin: 0 0 32px 0;
+    width: fit-content;
+}
+
+.shelf-tab {
+    background-color: transparent;
+    padding: 10px 20px;
+    margin: 0 2px;
+    border: none;
+    font-weight: 600;
+    color: #6b7b5a;
+}
+
+.shelf-tab.active {
+    border: 1px solid #ddd8c9;
+    border-radius: 14px;
+    border-color: #ddd8c9;
+    background-color: #3f4a34;
+    color: #c6b593;
+}
+
+.book-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
