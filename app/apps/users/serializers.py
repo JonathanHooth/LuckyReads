@@ -24,6 +24,20 @@ class UserSerializer(ModelSerializer):
     # defines characteristics of specific fields
     extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
+
+  def create(self, validated_data):
+    """Cteate and return a user with encrypted password"""
+    return get_user_model().objects.create_user(**validated_data)
+  
+  def update(self, validated_data):
+     """Update and return user"""
+
+     #password = validated_data.pop("password", None)
+     #profile_data = validated_data.pop("bio", None)
+     #socials_data = validated_data.pop("socials", None)
+     #user = super().update(instance, validated_data)
+  
+
 class LoginSerializer(serializers.Serializer):
   username = serializers.CharField()
   password = serializers.CharField()
