@@ -25,7 +25,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://luckyreads-network-redis:6379/0
       - DJANGO_REDIS_URL=redis://luckyreads-network-redis:6379/1
       - POSTGRES_HOST=postgres-luckyreads-network
-      - CSRF_TRUSTED_ORIGINS=http://localhost:3000
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://localhost:5173
       - DJANGO_BASE_URL=${DJANGO_BASE_URL:-http://localhost:8080}
       - WORKER_COUNT=${WORKER_COUNT:-10}
       - REDIS_HOST=${REDIS_HOST:-luckyreads-network-redis}

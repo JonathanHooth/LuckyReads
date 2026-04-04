@@ -2,8 +2,9 @@ from typing import ClassVar
 
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, AbstractUser, BaseUserManager, PermissionsMixin
-
+from django.core.validators import RegexValidator, validate_email
 from django.utils.translation import gettext_lazy as _
+from django.core import exceptions
 
 from apps.core.abstracts.models import ManagerBase, UniqueModel
 
@@ -65,10 +66,8 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
     date_joined = models.DateTimeField(auto_now_add=True, editable=False, blank=True)
     date_modified = models.DateTimeField(auto_now=True, editable=False, blank=True)
 
-
-
     bio = models.TextField(blank=True, default='')
-    avatar_url = models.URLField(blank=True, default='')
+
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -90,14 +89,34 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
     def name(self) -> str:
         return self.profile.name
     
-
-
     class Meta:
         db_table = 'users_user'
 
     def __str__(self):
         return self.username
     
+    def validate_email(self):
+        """Check that email is valid."""
+
+        if self.email is None:
+            return
+
+        # Check email unique among users
+        if (
+            User.objects.filter(email=self.email)
+            .exclude(id=self.id)
+            .exists()
+        ):
+            raise exceptions.ValidationError({"email": "Email is already in use"})
+
+
+        # Check username value
+        username_is_email = False
+        try:
+            validate_email(self.username)
+            username_is_email = True
+        except exceptions.ValidationError:
+            pass
 
     def clean(self):
       # If user is created through some other method, ensure username is set.
