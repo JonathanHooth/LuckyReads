@@ -27,12 +27,12 @@ class AuthTokenView(
   renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
   authentication_classes = [
     authentication.TokenAuthentication,
-    authentication.SessionAuthentication,
+    #authentication.SessionAuthentication,
   ]
   
   @extend_schema(request=LoginSerializer)
   def post(self, request, *args, **kwargs):
-      return super().post(request, *args, **kwargs)
+    return super().post(request, *args, **kwargs)
 
   def retrieve(self, request, *args, **kwargs):
     if request.user.is_anonymous:
