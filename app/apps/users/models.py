@@ -87,7 +87,7 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
     # Dynamic Properties
     @property
     def name(self) -> str:
-        return self.profile.name
+        return self.username
     
     class Meta:
         db_table = 'users_user'
