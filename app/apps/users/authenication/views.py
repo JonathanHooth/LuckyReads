@@ -1,4 +1,4 @@
-from app.settings import LOGIN_URL
+from django.conf import settings
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
@@ -40,7 +40,7 @@ class AuthLogoutView(LogoutView):
     Extends TemplateView.
     """
 
-    next_page = LOGIN_URL
+    next_page = settings.LOGIN_URL
 
 
 # Template for the Email sent to the user requesting the password reset
