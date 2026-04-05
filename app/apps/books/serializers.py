@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.core.abstracts.serializers import ModelSerializer
 from apps.books.models import Author, Book, Review, ShelfEntry
+from apps.books.services import get_or_fetch_book
 
 class AuthorSerializer(ModelSerializer):
     class Meta:
@@ -23,16 +24,17 @@ class ReviewSerializer(ModelSerializer):
 
 class ShelfEntrySerializer(ModelSerializer):
     book = BookSerializer(read_only=True)
-    book_id = serializers.PrimaryKeyRelatedField(
-        queryset=Book.objects.all(), source='book', write_only=True
-    )
+    openlibrary_key = serializers.CharField(write_only=True)
     review = ReviewSerializer(read_only=True)
 
     class Meta:
         model = ShelfEntry
-        fields = ['id', 'book_id', 'book', 'status', 'review', 'added_at', 'updated_at']
-        read_only_fields = ['id', 'added_at', 'updated_at']
+        fields = ['id', 'book', 'openlibrary_key', 'status', 'review', 'added_at']
+        read_only_fields = ['id', 'added_at']
 
     def create(self, validated_data: dict) -> ShelfEntry:
+        openlibrary_key = validated_data.pop('openlibrary_key')
+        book = get_or_fetch_book(openlibrary_key)
         validated_data['user'] = self.context['request'].user
+        validated_data['book'] = book
         return super().create(validated_data)
