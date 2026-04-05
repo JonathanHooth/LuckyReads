@@ -40,6 +40,11 @@ DEV = os.environ.get("DEV", None) == "true"
 
 TESTING = sys.argv[1:2] == ["test"]
 
+def environ_list(key: str, default=""):
+    return [
+        item.strip() for item in filter(None, os.environ.get(key, default).split(","))
+    ]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -49,7 +54,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
+    "allauth.headless",
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
@@ -70,11 +80,93 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware",
 ]
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_standardized_errors.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
+
+}
+
+
+DRF_STANDARDIZED_ERRORS = {"ENABLE_IN_DEBUG_FOR_UNHANDLED_EXCEPTIONS": True}
+
+FIXTURE_DIRS = [os.path.join(BASE_DIR, "fixtures")]
+
+
+###############################
+# == Auth & Session Config == #
+###############################
+
+# Allows handling csrf and session cookies in external requests
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
+# Prevent csrf and session cookies from being set by JS
+CSRF_COOKIE_HTTPONLY = False
+SESSION_COOKIE_HTTPONLY = False
+
+# Only allow cookies from these origins
+CSRF_TRUSTED_ORIGINS = environ_list("CSRF_TRUSTED_ORIGINS")
+
+# Only allow cookies to be sent over HTTPS
+CSRF_COOKIE_SECURE = environ_bool("CSRF_COOKIE_SECURE", False)
+SESSION_COOKIE_SECURE = environ_bool("SESSION_COOKIE_SECURE", False)
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+CORS_ALLOW_CREDENTIALS = True
+
+# Other auth settings
+AUTH_USER_MODEL = "users.User"
+LOGIN_REDIRECT_URL = "/admin/"
+LOGIN_URL = "/admin/login/"
+AUTHENTICATION_BACKENDS = [
+    "allauth.account.auth_backends.AuthenticationBackend",
+    "apps.core.backend.CustomBackend",
+]
+
+# Used for logging in a user via api
+DEFAULT_AUTH_BACKEND = "apps.core.backend.CustomBackend"
+
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'LuckyReads API',
+    'DESCRIPTION': 'LuckyReads Swagger API Endpoints',
+    'VERSION': '0.0.1',
+    'SERVE_INCLUDE_SCHEMA': False,
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "ENUM_NAME_OVERRIDES": {
+        "ValidationErrorEnum": "drf_standardized_errors.openapi_serializers.ValidationErrorEnum.choices",
+        "ClientErrorEnum": "drf_standardized_errors.openapi_serializers.ClientErrorEnum.choices",
+        "ServerErrorEnum": "drf_standardized_errors.openapi_serializers.ServerErrorEnum.choices",
+        "ErrorCode401Enum": "drf_standardized_errors.openapi_serializers.ErrorCode401Enum.choices",
+        "ErrorCode403Enum": "drf_standardized_errors.openapi_serializers.ErrorCode403Enum.choices",
+        "ErrorCode404Enum": "drf_standardized_errors.openapi_serializers.ErrorCode404Enum.choices",
+        "ErrorCode405Enum": "drf_standardized_errors.openapi_serializers.ErrorCode405Enum.choices",
+        "ErrorCode406Enum": "drf_standardized_errors.openapi_serializers.ErrorCode406Enum.choices",
+        "ErrorCode415Enum": "drf_standardized_errors.openapi_serializers.ErrorCode415Enum.choices",
+        "ErrorCode429Enum": "drf_standardized_errors.openapi_serializers.ErrorCode429Enum.choices",
+        "ErrorCode500Enum": "drf_standardized_errors.openapi_serializers.ErrorCode500Enum.choices",
+    },
+    # OTHER SETTINGS
+}
+
 
 ROOT_URLCONF = 'luckyreads.urls'
 
@@ -100,6 +192,8 @@ WSGI_APPLICATION = 'luckyreads.wsgi.application'
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN", ""), send_default_pii=True, traces_sample_rate=1.0
 )
+
+
 
 
 ##########################################
@@ -271,3 +365,4 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
