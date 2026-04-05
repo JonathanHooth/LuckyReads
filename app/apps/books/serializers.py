@@ -1,26 +1,27 @@
 from rest_framework import serializers
 
+from apps.core.abstracts.serializers import ModelSerializer
 from apps.books.models import Author, Book, Review, ShelfEntry
 
-class AuthorSerializer(serializers.ModelSerializer):
+class AuthorSerializer(ModelSerializer):
     class Meta:
         model = Author
         fields = ['id', 'openlibrary_key', 'name', 'photo_url']
 
-class BookSerializer(serializers.ModelSerializer):
+class BookSerializer(ModelSerializer):
     authors = AuthorSerializer(many=True, read_only=True)
 
     class Meta:
         model = Book
         fields = ['id', 'openlibrary_key', 'title', 'authors', 'cover_url', 'isbn']
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewSerializer(ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'rating', 'review_text', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-class ShelfEntrySerializer(serializers.ModelSerializer):
+class ShelfEntrySerializer(ModelSerializer):
     book = BookSerializer(read_only=True)
     book_id = serializers.PrimaryKeyRelatedField(
         queryset=Book.objects.all(), source='book', write_only=True

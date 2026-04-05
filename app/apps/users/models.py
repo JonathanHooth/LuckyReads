@@ -67,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
     date_modified = models.DateTimeField(auto_now=True, editable=False, blank=True)
 
     bio = models.TextField(blank=True, default='')
-
+    avatar_url = models.URLField(blank=True, default='')
 
     groups = models.ManyToManyField(
         'auth.Group',
