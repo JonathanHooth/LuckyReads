@@ -58,20 +58,16 @@ def update_book_recommendations(user_id: int) -> None:
     
     books_on_shelf: set = shelf_book_ids.get(user_id, set())
 
-    book_scores: dict[int, float] = {
-        int(node.split('_')[1]): score
+    book_scores: list[BookRecommendation] = [
+        BookRecommendation(user_id=user_id, book_id=int(node.split('_')[1]), score=score)
         for node, score in scores.items()
         if node.startswith('book_')
         and int(node.split('_')[1]) not in books_on_shelf
-    }
+    ]
 
     with transaction.atomic():
-        for book_id, score in book_scores.items():
-            BookRecommendation.objects.update_or_create(
-                user_id=user_id,
-                book_id=book_id,
-                defaults={'score': score}
-            )
+        BookRecommendation.objects.filter(user_id=user_id).delete()
+        BookRecommendation.objects.bulk_create(book_scores)
 
 @shared_task
 def update_buddy_recommendations(user_id: int) -> None:
@@ -81,17 +77,13 @@ def update_buddy_recommendations(user_id: int) -> None:
     if scores is None:
         return
     
-    buddy_scores = {
-        int(node.split('_')[1]): score
+    buddy_scores: list[BuddyRecommendation] = [
+        BuddyRecommendation(from_user_id=user_id, to_user_id=int(node.split('_')[1]), score=score)
         for node, score in scores.items()
         if node.startswith('user_')
         and int(node.split('_')[1]) != user_id
-    }
+    ]
 
     with transaction.atomic():
-        for to_user_id, score in buddy_scores.items():
-            BuddyRecommendation.objects.update_or_create(
-                from_user_id=user_id,
-                to_user_id=to_user_id,
-                defaults={'score': score}
-            )
+        BuddyRecommendation.objects.filter(from_user_id=user_id).delete()
+        BuddyRecommendation.objects.bulk_create(buddy_scores)
