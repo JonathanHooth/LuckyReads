@@ -11,6 +11,8 @@ class BookRecommendationListView(generics.ListAPIView):
     serializer_class = BookRecommendationSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return BookRecommendation.objects.none()
         return BookRecommendation.objects.filter(user=self.request.user).select_related('book').prefetch_related('book__authors')
     
 class BuddyRecommendationListView(generics.ListAPIView):
@@ -21,4 +23,6 @@ class BuddyRecommendationListView(generics.ListAPIView):
     serializer_class = BuddyRecommendationSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return BuddyRecommendation.objects.none()
         return BuddyRecommendation.objects.filter(from_user=self.request.user).select_related('to_user')

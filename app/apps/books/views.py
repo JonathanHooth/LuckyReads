@@ -107,4 +107,6 @@ class ShelfView(generics.ListCreateAPIView):
     serializer_class = ShelfEntrySerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return ShelfEntry.objects.none()
         return ShelfEntry.objects.filter(user=self.request.user).select_related('book', 'review').prefetch_related('book__authors')
