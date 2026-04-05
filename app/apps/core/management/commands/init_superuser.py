@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
         if not super_users.exists() and not existing_user.exists():
             with transaction.atomic():
-                User.objects.create_superuser(username=user, email=email, password=password)
+                User.objects.create_superuser(username=email, email=email, password=password)
 
             self.stdout.write(
                 self.style.SUCCESS(

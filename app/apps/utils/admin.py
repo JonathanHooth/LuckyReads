@@ -6,3 +6,14 @@ def get_admin_context(request, extra_context=None):
 
     return {**admin.site.each_context(request), **(extra_context or {})}
 
+def get_model_admin_reverse(admin_name, model, url_context):
+    """Format info to proper reversable format."""
+
+    info = (
+        admin_name,
+        model._meta.app_label,
+        model._meta.model_name,
+        url_context,
+    )
+
+    return "%s:%s_%s_%s" % info
