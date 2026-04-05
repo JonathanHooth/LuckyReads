@@ -13,7 +13,7 @@ from apps.users.serializers import LoginSerializer, RegisterSerializer, PublicUs
 
 @extend_schema(
     request=RegisterSerializer,
-    responses={201, UserProfileSerializer}
+    responses={201: UserProfileSerializer}
 )
 class RegisterView(APIView):
     """
@@ -44,7 +44,7 @@ class LoginView(APIView):
 
     @extend_schema(
         request=LoginSerializer,
-        responses={200, UserProfileSerializer}
+        responses={200: UserProfileSerializer}
     )
     def post(self, request: Request) -> Response:
         serializer = LoginSerializer(data=request.data)
