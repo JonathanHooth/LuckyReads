@@ -16,9 +16,8 @@ app_name = "api-users"
 
 urlpatterns = [
   path("", include(router.urls)),
-  path("login/", RedirectView.as_view(url=reverse_lazy("api-users:login"))),
   path(
-      "token/",
+      "login/",
       viewsets.AuthTokenView.as_view({"get": "retrieve", "post": "post"}),
       name="login",
   ),
