@@ -79,7 +79,7 @@ class OpenLibrarySearchView(APIView):
 
 class ReviewView(generics.RetrieveUpdateDestroyAPIView):
     """
-    POST /api/reviews
+    POST /api/reviews/
     """
 
     serializer_class = ShelfEntrySerializer
