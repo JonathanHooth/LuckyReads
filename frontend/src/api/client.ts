@@ -1,32 +1,29 @@
+import axios, { AxiosError } from "axios";
+
 export const AUTH_TOKEN_STORAGE_KEY = "luckyreads.authToken";
 
-export type ApiError = Error & {
-  status?: number;
-  fieldErrors?: Record<string, string[]>;
-};
+export type ApiFieldErrors = Record<string, string[]>;
 
-type RequestOptions = Omit<RequestInit, "body"> & {
-  body?: unknown;
-};
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api",
+  headers: { Accept: "application/json" },
+  timeout: 10_000,
+});
 
-function getHeaders(headers?: HeadersInit) {
-  const nextHeaders = new Headers(headers);
-
-  if (!nextHeaders.has("Content-Type")) {
-    nextHeaders.set("Content-Type", "application/json");
-  }
-
+apiClient.interceptors.request.use((config) => {
   const token = getAuthToken();
-  if (token && !nextHeaders.has("Authorization")) {
-    nextHeaders.set("Authorization", `Token ${token}`);
+
+  if (token) {
+    config.headers = config.headers ?? {};
+    if (!config.headers.Authorization) {
+      config.headers.Authorization = `Token ${token}`;
+    }
   }
 
-  return nextHeaders;
-}
+  return config;
+});
 
-function normalizeFieldErrors(
-  payload: unknown,
-): Record<string, string[]> | undefined {
+function normalizeFieldErrors(payload: unknown): ApiFieldErrors | undefined {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return undefined;
   }
@@ -48,56 +45,47 @@ function normalizeFieldErrors(
   return entries.length ? Object.fromEntries(entries) : undefined;
 }
 
-function getErrorMessage(payload: unknown): string {
-  if (!payload) {
-    return "Something went wrong. Please try again.";
-  }
+export function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data;
 
-  if (typeof payload === "string") {
-    return payload;
-  }
-
-  if (typeof payload === "object") {
-    const maybePayload = payload as Record<string, unknown>;
-
-    if (typeof maybePayload.detail === "string") {
-      return maybePayload.detail;
+    if (typeof payload === "string" && payload.trim()) {
+      return payload;
     }
 
-    const fieldErrors = normalizeFieldErrors(payload);
-    if (fieldErrors) {
-      return Object.values(fieldErrors)
-        .flat()
-        .join(" ");
+    if (payload && typeof payload === "object") {
+      const record = payload as Record<string, unknown>;
+
+      if (typeof record.detail === "string") {
+        return record.detail;
+      }
+
+      const fieldErrors = normalizeFieldErrors(payload);
+      if (fieldErrors) {
+        return Object.values(fieldErrors).flat().join(" ");
+      }
     }
+
+    return error.message || "Something went wrong. Please try again.";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
   }
 
   return "Something went wrong. Please try again.";
 }
 
-export async function apiRequest<T>(
-  path: string,
-  { body, headers, ...options }: RequestOptions = {},
-): Promise<T> {
-  const response = await fetch(`/api${path}`, {
-    ...options,
-    headers: getHeaders(headers),
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-
-  const contentType = response.headers.get("content-type") ?? "";
-  const payload = contentType.includes("application/json")
-    ? await response.json()
-    : await response.text();
-
-  if (!response.ok) {
-    const error = new Error(getErrorMessage(payload)) as ApiError;
-    error.status = response.status;
-    error.fieldErrors = normalizeFieldErrors(payload);
-    throw error;
+export function getApiFieldErrors(error: unknown): ApiFieldErrors | undefined {
+  if (!axios.isAxiosError(error)) {
+    return undefined;
   }
 
-  return payload as T;
+  return normalizeFieldErrors(error.response?.data);
+}
+
+export function isAxiosApiError(error: unknown): error is AxiosError {
+  return axios.isAxiosError(error);
 }
 
 export function getAuthToken() {

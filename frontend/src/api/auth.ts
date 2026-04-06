@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiClient } from "./client";
 
 export type AuthUser = {
   id: number;
@@ -29,24 +29,22 @@ export async function registerUser({
   name,
   bio,
 }: RegisterPayload) {
-  return apiRequest<AuthResponse>("/users/register/", {
-    method: "POST",
-    body: {
-      email,
-      password,
-      confirm_password: confirmPassword,
-      name,
-      bio: bio ?? "",
-    },
+  const { data } = await apiClient.post<AuthResponse>("/users/register/", {
+    email,
+    password,
+    confirm_password: confirmPassword,
+    name,
+    bio: bio ?? "",
   });
+
+  return data;
 }
 
 export async function loginUser(email: string, password: string) {
-  return apiRequest<AuthResponse>("/users/login/", {
-    method: "POST",
-    body: {
-      email,
-      password,
-    },
+  const { data } = await apiClient.post<AuthResponse>("/users/login/", {
+    email,
+    password,
   });
+
+  return data;
 }

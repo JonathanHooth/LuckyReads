@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { type ApiError, storeAuthToken } from "../../api/client";
+import { storeAuthToken, getApiErrorMessage } from "../../api/client";
 import { loginUser } from "../../api/auth";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
@@ -44,8 +44,7 @@ export default function Login() {
         },
       });
     } catch (caughtError) {
-      const apiError = caughtError as ApiError;
-      setError(apiError.message || "We couldn't sign you in. Please try again.");
+      setError(getApiErrorMessage(caughtError) || "We couldn't sign you in. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

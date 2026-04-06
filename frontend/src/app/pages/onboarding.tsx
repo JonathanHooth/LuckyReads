@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../api/auth";
-import { type ApiError, storeAuthToken } from "../../api/client";
+import { getApiErrorMessage, storeAuthToken } from "../../api/client";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
 
@@ -123,8 +123,7 @@ export default function SignupFlow() {
         },
       });
     } catch (caughtError) {
-      const apiError = caughtError as ApiError;
-      setError(apiError.message || "We couldn't create your account. Please try again.");
+      setError(getApiErrorMessage(caughtError) || "We couldn't create your account. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
