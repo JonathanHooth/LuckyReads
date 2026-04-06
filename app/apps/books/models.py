@@ -67,7 +67,7 @@ class ShelfEntry(models.Model):
         default=Status.WANT_TO_READ 
     )
     added_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    #updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'books_shelf_entry'
