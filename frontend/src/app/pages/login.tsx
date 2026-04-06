@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { type ApiError, storeAuthToken } from "../../api/client";
+import { loginUser } from "../../api/auth";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!email.trim() || !password.trim()) {
@@ -18,14 +22,33 @@ export default function Login() {
       return;
     }
 
+    if (!emailPattern.test(email.trim())) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
     setError("");
     setIsSubmitting(true);
 
-    window.setTimeout(() => {
+    try {
+      const response = await loginUser(email.trim(), password);
+
+      if (response.token) {
+        storeAuthToken(response.token);
+      }
+
       navigate("/home", {
-        state: { email },
+        state: {
+          email: response.user.email,
+          profileName: response.user.name,
+        },
       });
-    }, 450);
+    } catch (caughtError) {
+      const apiError = caughtError as ApiError;
+      setError(apiError.message || "We couldn't sign you in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

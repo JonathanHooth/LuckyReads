@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { registerUser } from "../../api/auth";
+import { type ApiError, storeAuthToken } from "../../api/client";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
 
@@ -19,6 +21,7 @@ export default function SignupFlow() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateStepOne = () => {
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
@@ -76,7 +79,7 @@ export default function SignupFlow() {
     setStep(0);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (step === 0) {
@@ -88,14 +91,43 @@ export default function SignupFlow() {
       return;
     }
 
-    navigate("/home", {
-      state: {
-        onboardingComplete: true,
-        profileName: name.trim(),
+    setIsSubmitting(true);
+
+    try {
+      const response = await registerUser({
         email: email.trim(),
+        password,
+        confirmPassword,
+        name: name.trim(),
         bio: bio.trim(),
-      },
-    });
+      });
+
+      if (response.token) {
+        storeAuthToken(response.token);
+
+        navigate("/home", {
+          state: {
+            onboardingComplete: true,
+            profileName: response.user.name ?? name.trim(),
+            email: response.user.email,
+            bio: response.user.bio ?? bio.trim(),
+          },
+        });
+        return;
+      }
+
+      navigate("/login", {
+        state: {
+          email: email.trim(),
+          registered: true,
+        },
+      });
+    } catch (caughtError) {
+      const apiError = caughtError as ApiError;
+      setError(apiError.message || "We couldn't create your account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -178,11 +210,16 @@ export default function SignupFlow() {
         {error ? <p className="login-message login-message-error">{error}</p> : null}
 
         <div className="onboarding-actions">
-          <button className="onboarding-secondary" type="button" onClick={handleBack}>
+          <button
+            className="onboarding-secondary"
+            type="button"
+            onClick={handleBack}
+            disabled={isSubmitting}
+          >
             Back
           </button>
-          <button className="login-submit" type="submit">
-            Continue
+          <button className="login-submit" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating Account..." : "Continue"}
           </button>
         </div>
       </form>
