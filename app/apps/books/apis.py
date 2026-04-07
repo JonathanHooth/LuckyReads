@@ -10,7 +10,7 @@ from apps.books import views
 router = DefaultRouter()
 router.register("reviews", views.ReviewViewSet, basename="review")
 
-app_name = "api-users"
+app_name = "api-books"
 
 urlpatterns = [
     path('', views.BookListView.as_view(), name='book-list'),

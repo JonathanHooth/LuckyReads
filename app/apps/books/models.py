@@ -8,7 +8,7 @@ class Author(models.Model):
         db_index=True
     )
     name = models.CharField(max_length=128)
-    bio = models.TextField(blank=True, default='')
+    4
     photo_url = models.URLField(blank=True, default='')
 
     class Meta:

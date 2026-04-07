@@ -1,12 +1,14 @@
-from rest_framework import generics, permissions, serializers, status, viewsets
+from rest_framework import generics, mixins, permissions, serializers, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 
 from drf_spectacular.utils import extend_schema
 
-from apps.core.abstracts.viewsets import ViewSetBase
+from apps.core.utils import Query, query_parameters
+from apps.core.abstracts.viewsets import ModelViewSetBase, ViewSetBase
 from apps.users.models import User
 from apps.users.permissions import IsOwnerOrReadOnly
 from apps.users.serializers import LoginSerializer, RegisterSerializer, UserSerializer, PublicUserSerializer
@@ -58,32 +60,32 @@ class LoginView(APIView):
             }
         )
     
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
     """
-    GET /api/users/
-    GET /api/users/<username>/
-    PATCH /api/users/<username>/
-    DELETE /api/users/<username>/
+    GET /api/users/{id}
+    GET /api/users/search/?username={username}
     """
 
     queryset = User.objects.filter(is_active=True)
-    lookup_field = 'username'
     permission_classes = [IsOwnerOrReadOnly]
-    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
     serializer_class = UserSerializer
 
-    def get_object(self) -> User:
-        username = self.kwargs.get('username')
-        obj = generics.get_object_or_404(
-            User.objects.filter(is_active=True),
-            username=username
-        )
+    @query_parameters(username=Query(required=True))
+    @action(detail=False, url_path="search")
+    def search(self, request, *arg, **kwargs):
+        """Search by username"""
+        username = request.query_params.get('username')
+        if not username:
+            return Response({'error': 'username is required'}, status=400)
+        
+        obj = generics.get_object_or_404(User, username=username, is_active=True)
+        self.check_object_permissions(request, obj)
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data)
 
-        self.check_object_permissions(self.request, obj)
-        return obj
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer]:
-        if self.action in ('retrieve', 'partial_update'):
+        if self.action in ('retrieve'):
             obj = self.get_object()
             if obj == self.request.user:
               return UserSerializer
@@ -92,3 +94,19 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance: User) -> None:
         instance.is_active = False
         instance.save()
+
+
+# Currently using APIView since the user can't delete their own account (for now).
+# If this changes, then switch to mixins + ViewSetBase
+class ManageUserView(generics.RetrieveUpdateAPIView):
+    """
+    Manage the authenticated user.
+    """
+
+    serializer_class = UserSerializer
+    authentication_classes = ModelViewSetBase.authentication_classes
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """Retrieve and return the authenticated user."""
+        return self.request.user
