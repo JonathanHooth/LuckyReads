@@ -96,9 +96,7 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
         instance.save()
 
 
-# Currently using APIView since the user can't delete their own account (for now).
-# If this changes, then switch to mixins + ViewSetBase
-class ManageUserView(generics.RetrieveUpdateAPIView):
+class ManageUserView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, ViewSetBase):
     """
     Manage the authenticated user.
     """
