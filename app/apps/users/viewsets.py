@@ -82,12 +82,10 @@ class UserViewSet(viewsets.ModelViewSet):
         return obj
 
     def get_serializer_class(self) -> type[serializers.ModelSerializer]:
-        try:
+        if self.action in ('retrieve', 'partial_update'):
             obj = self.get_object()
             if obj == self.request.user:
               return UserProfileSerializer
-        except Exception:
-            pass
         return PublicUserProfileSerializer
     
     def perform_destroy(self, instance: User) -> None:
