@@ -52,7 +52,10 @@ class Command(BaseCommand):
         for data in USERS:
             user, was_created = User.objects.get_or_create(
                 username=data['username'],
-                defaults={'password': 'password'}
+                defaults={
+                    'email': f'{data['username']}@test.com',
+                    'password': 'password'
+                    }
             )
             if was_created:
                 user.set_password('password')

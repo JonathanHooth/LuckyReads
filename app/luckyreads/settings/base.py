@@ -54,12 +54,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.github",
-    "allauth.headless",
+    # "allauth",
+    # "allauth.account",
+    # "allauth.socialaccount",
+    # "allauth.socialaccount.providers.google",
+    # "allauth.socialaccount.providers.github",
+    # "allauth.headless",
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
@@ -80,11 +80,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
+    # "allauth.account.middleware.AccountMiddleware",
 ]
 
 # Django Rest Framework
@@ -95,7 +95,8 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_standardized_errors.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-    
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
 
@@ -126,22 +127,22 @@ CSRF_TRUSTED_ORIGINS = environ_list("CSRF_TRUSTED_ORIGINS")
 CSRF_COOKIE_SECURE = environ_bool("CSRF_COOKIE_SECURE", False)
 SESSION_COOKIE_SECURE = environ_bool("SESSION_COOKIE_SECURE", False)
 
-# CORS Settings
-CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
-CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-CORS_ALLOW_CREDENTIALS = True
+# CORS Settings (django-cors-headers not installed)
+# CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS
+# CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+# CORS_ALLOW_CREDENTIALS = True
 
 # Other auth settings
 AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "/admin/"
 LOGIN_URL = "/admin/login/"
 AUTHENTICATION_BACKENDS = [
-    "allauth.account.auth_backends.AuthenticationBackend",
+    # "allauth.account.auth_backends.AuthenticationBackend",
     "apps.core.backend.CustomBackend",
 ]
 
 # Used for logging in a user via api
-DEFAULT_AUTH_BACKEND = "apps.core.backend.CustomBackend"
+# DEFAULT_AUTH_BACKEND = "apps.core.backend.CustomBackend"
 
 
 
