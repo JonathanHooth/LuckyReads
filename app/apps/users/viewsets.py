@@ -9,11 +9,11 @@ from drf_spectacular.utils import extend_schema
 from apps.core.abstracts.viewsets import ViewSetBase
 from apps.users.models import User
 from apps.users.permissions import IsOwnerOrReadOnly
-from apps.users.serializers import LoginSerializer, RegisterSerializer, PublicUserProfileSerializer, UserProfileSerializer
+from apps.users.serializers import LoginSerializer, RegisterSerializer, UserSerializer, PublicUserSerializer
 
 @extend_schema(
     request=RegisterSerializer,
-    responses={201: UserProfileSerializer}
+    responses={201: UserSerializer}
 )
 class RegisterView(APIView):
     """
@@ -30,7 +30,7 @@ class RegisterView(APIView):
         return Response(
             {
                 'token': token.key,
-                'user': UserProfileSerializer(user).data
+                'user': UserSerializer(user, context={'request': request}).data
             },
             status=status.HTTP_201_CREATED
         )
@@ -44,7 +44,7 @@ class LoginView(APIView):
 
     @extend_schema(
         request=LoginSerializer,
-        responses={200: UserProfileSerializer}
+        responses={200: UserSerializer}
     )
     def post(self, request: Request) -> Response:
         serializer = LoginSerializer(data=request.data)
@@ -54,7 +54,7 @@ class LoginView(APIView):
         return Response(
             {
                 'token': token.key,
-                'user': UserProfileSerializer(user).data
+                'user': UserSerializer(user, context={'request': request}).data
             }
         )
     
@@ -70,6 +70,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     permission_classes = [IsOwnerOrReadOnly]
     http_method_names = ['get', 'patch', 'delete', 'head', 'options']
+    serializer_class = UserSerializer
 
     def get_object(self) -> User:
         username = self.kwargs.get('username')
@@ -85,8 +86,8 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ('retrieve', 'partial_update'):
             obj = self.get_object()
             if obj == self.request.user:
-              return UserProfileSerializer
-        return PublicUserProfileSerializer
+              return UserSerializer
+        return PublicUserSerializer
     
     def perform_destroy(self, instance: User) -> None:
         instance.is_active = False
