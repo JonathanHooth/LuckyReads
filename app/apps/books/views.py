@@ -2,10 +2,12 @@ import requests
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework import filters, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from apps.core.abstracts.viewsets import ViewSetBase
 from apps.books.models import Book, Review, ShelfEntry
 from apps.books.serializers import BookSerializer, ReviewSerializer, ShelfEntrySerializer
 
@@ -77,15 +79,28 @@ class OpenLibrarySearchView(APIView):
 
         return Response(results)
 
-class ReviewView(generics.RetrieveUpdateDestroyAPIView):
+class ReviewViewSet(CreateModelMixin, ListModelMixin, ViewSetBase):
     """
     POST /api/reviews/
     """
 
-    serializer_class = ShelfEntrySerializer
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Review.objects.none()
+        return Review.objects.filter(shelf_entry__user=self.request.user).select_related('shelf_entry__book')
 
     def create(self, request, *args, **kwargs):
         shelf_entry_id = request.data.get('shelf_entry_id')
+        shelf_entry = generics.get_object_or_404(ShelfEntry, id=shelf_entry_id)
+        
+        if shelf_entry.user != request.user:
+            return Response(
+                {'error': 'User can only review books on their shelf'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         review, created = Review.objects.update_or_create(
             shelf_entry_id=shelf_entry_id,
             defaults={
