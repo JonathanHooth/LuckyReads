@@ -133,7 +133,6 @@ class ScopeType(models.TextChoices):
     """Permission levels."""
 
     GLOBAL = "global", _("Global")
-    CLUB = "club", _("Club")
 
 
 class ModelBase(models.Model):
