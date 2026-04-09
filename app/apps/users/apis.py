@@ -15,5 +15,6 @@ app_name = "api-users"
 urlpatterns = [
   path('register/', viewsets.RegisterView.as_view(), name='register'),
   path('login/', viewsets.LoginView.as_view(), name='login'),
+  path('me/', viewsets.ManageUserView.as_view({'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'}), name='me'),
   *router.urls
 ]

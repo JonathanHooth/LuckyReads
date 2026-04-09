@@ -104,7 +104,7 @@ tasks:
   clean:network:
     desc: 'Stop containers and remove volumes'
     cmds:
-      - docker-compose -f docker compose.network.yml down --remove-orphans -v
+      - docker-compose -f docker-compose.network.yml down --remove-orphans -v
   
   show_urls:
     desc: 'List available urls in django'

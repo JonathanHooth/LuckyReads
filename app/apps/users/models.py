@@ -111,10 +111,10 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
 
 
         # Check username value
-        username_is_email = False
+        #username_is_email = False
         try:
             validate_email(self.username)
-            username_is_email = True
+            #username_is_email = True
         except exceptions.ValidationError:
             pass
 
