@@ -24,9 +24,9 @@ export const mockRecommendations: DisplayBook[] = [
     },
     {
         id: "mock-rec-4",
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        coverUrl: "https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg",
+        title: "Good Omens",
+        author: "Neil Gaiman, Terry Pratchett",
+        coverUrl: "https://covers.openlibrary.org/b/isbn/9780060853983-M.jpg",
         matchPercentage: 86,
     },
     {

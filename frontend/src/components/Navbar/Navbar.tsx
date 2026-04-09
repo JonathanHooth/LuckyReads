@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import logo from "../../assets/luckyreadslogo_navbar.png";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -11,7 +12,9 @@ export default function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar__inner">
-                <div className="navbar-logo">LuckyReads</div>
+                <NavLink to="/home" className="navbar-logo" aria-label="LuckyReads home">
+                    <img src={logo} alt="LuckyReads" className="navbar-logo__image" />
+                </NavLink>
 
                 <div className="navbar-links">
                     {navItems.map((item) => (
