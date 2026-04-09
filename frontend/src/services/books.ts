@@ -6,21 +6,16 @@ type ApiAuthor = {
 
 type ApiBook = {
     id?: number | string;
+    openlibrary_key?: string | null;
     title?: string | null;
     authors?: ApiAuthor[] | null;
     cover_url?: string | null;
-    rating?: number | null;
-    average_rating?: number | null;
-    genres?: unknown;
-    subjects?: unknown;
 };
 
 type ApiRecommendation = {
     id?: number | string;
     book?: ApiBook | null;
     score?: number | null;
-    match_percentage?: number | null;
-    match_reason?: string | null;
 };
 
 export type DisplayBook = {
@@ -31,39 +26,13 @@ export type DisplayBook = {
     matchPercentage?: number;
 };
 
-function normalizeGenres(value: unknown): string[] {
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value
-        .map((genre) => {
-            if (typeof genre === "string") {
-                return genre;
-            }
-
-            if (
-                genre &&
-                typeof genre === "object" &&
-                "name" in genre &&
-                typeof genre.name === "string"
-            ) {
-                return genre.name;
-            }
-
-            return null;
-        })
-        .filter((genre): genre is string => Boolean(genre))
-        .slice(0, 2);
-}
-
 function mapBook(book: ApiBook, recommendation?: ApiRecommendation): DisplayBook {
     const authors = Array.isArray(book.authors)
         ? book.authors
               .map((author) => author.name?.trim())
               .filter((name): name is string => Boolean(name))
         : [];
-    const rawScore = recommendation?.match_percentage ?? recommendation?.score;
+    const rawScore = recommendation?.score;
     const matchPercentage =
         typeof rawScore === "number"
             ? Math.max(
@@ -76,7 +45,13 @@ function mapBook(book: ApiBook, recommendation?: ApiRecommendation): DisplayBook
             : undefined;
 
     return {
-        id: String(recommendation?.id ?? book.id ?? book.title ?? "book-card"),
+        id: String(
+            recommendation?.id ??
+                book.id ??
+                book.openlibrary_key ??
+                book.title ??
+                "book-card",
+        ),
         title: book.title?.trim() || "Untitled book",
         author: authors.join(", ") || "Unknown author",
         coverUrl: book.cover_url?.trim() || undefined,

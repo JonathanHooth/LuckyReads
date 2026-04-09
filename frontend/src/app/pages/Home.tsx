@@ -11,7 +11,7 @@ import { mockSearchResults } from "../../services/mockSearchResults";
 import "./Home.css";
 
 const FILTERS = ["All", "Books", "Authors"] as const;
-const SEARCHABLE_FILTERS = new Set(["All", "Books"]);
+const SEARCHABLE_FILTERS = new Set(["All", "Books", "Authors"]);
 const SKELETON_COUNT = 6;
 const USE_MOCK_HOME_DATA = import.meta.env.VITE_USE_MOCK_HOME_DATA === "true";
 
@@ -177,6 +177,7 @@ export default function Home() {
     const heading = hasSearchQuery ? "Search Results" : "Recommended For You";
     const cards = hasSearchQuery ? searchResults : recommendations;
     const isLoading = hasSearchQuery ? loadingSearch : loadingRecommendations;
+    const showInlineWarning = Boolean(error) && cards.length > 0;
 
     const helperMessage = useMemo(() => {
         if (!hasSearchQuery || searchSupported) {
@@ -205,7 +206,7 @@ export default function Home() {
                                 onChange={(event) =>
                                     setSearchQuery(event.target.value)
                                 }
-                                placeholder="Search for books, authors, or readers..."
+                                placeholder="Search for books or authors..."
                             />
                         </label>
 
@@ -258,8 +259,14 @@ export default function Home() {
                             </div>
                         ) : null}
 
-                        {!helperMessage && error ? (
+                        {!helperMessage && error && !showInlineWarning ? (
                             <div className="home-state home-state--error" role="alert">
+                                <p>{error}</p>
+                            </div>
+                        ) : null}
+
+                        {!helperMessage && showInlineWarning ? (
+                            <div className="home-inline-warning" role="status">
                                 <p>{error}</p>
                             </div>
                         ) : null}
@@ -272,14 +279,14 @@ export default function Home() {
                             </div>
                         ) : null}
 
-                        {!helperMessage && !error && !isLoading && cards.length === 0 ? (
+                        {!helperMessage && !showInlineWarning && !error && !isLoading && cards.length === 0 ? (
                             <div className="home-state home-state--empty">
                                 <p>No results found.</p>
                                 <p>Try a different title, author, or keyword.</p>
                             </div>
                         ) : null}
 
-                        {!helperMessage && !error && !isLoading && cards.length > 0 ? (
+                        {!helperMessage && !isLoading && cards.length > 0 ? (
                             <div className="home-grid">
                                 {cards.map((book) => (
                                     <BookCard key={book.id} book={book} />
