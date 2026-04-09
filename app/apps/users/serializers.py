@@ -1,8 +1,43 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
+from django.contrib.auth import get_user_model, authenticate
 
-from apps.core.abstracts.serializers import ModelSerializer
+from apps.core.abstracts.serializers import ModelSerializer, ModelSerializerBase
 from apps.users.models import User
+
+class UserSerializer(ModelSerializer):
+
+  email = serializers.EmailField()
+  username = serializers.CharField(required=False)
+  bio = serializers.CharField(required=False)
+
+  class Meta:
+    model = User
+    fields = [
+      *ModelSerializerBase.default_fields,
+      "username",
+      "email",
+      "bio",
+    ]
+
+  def create(self, validated_data: dict) -> User:
+    """Create and return a user with encrypted password"""
+    return get_user_model().objects.create_user(**validated_data)
+  
+  def update(self, instance: User, validated_data: dict) -> User:
+     """Update and return user"""
+     validated_data.pop("password", None)
+     return super().update(instance, validated_data)
+  
+class PublicUserSerializer(ModelSerializer):
+  
+  class Meta:
+    model = User
+    fields = [
+        *ModelSerializerBase.default_fields,
+        "username",
+        "bio",
+    ]
+    read_only_fields = ['id', 'username', 'bio']
 
 class RegisterSerializer(serializers.ModelSerializer):
 
@@ -36,17 +71,3 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('User account is disabled.')
         data['user'] = user
         return data
-    
-class PublicUserProfileSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'bio', 'avatar_url']
-        read_only_fields = ['id']
-
-class UserProfileSerializer(ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'bio', 'avatar_url']
-        read_only_fields = ['id', 'email']
