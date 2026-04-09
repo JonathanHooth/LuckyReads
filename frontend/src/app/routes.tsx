@@ -3,12 +3,12 @@ import {
     createBrowserRouter,
     Link,
     Navigate,
-    useLocation,
     type RouteObject,
 } from "react-router-dom";
 import Login from "./pages/login";
 import Onboarding from "./pages/onboarding";
 import MyShelf from "./pages/MyShelf";
+import Home from "./pages/Home";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -82,43 +82,6 @@ function ForgotPassword() {
     );
 }
 
-function ReaderHome() {
-    const location = useLocation();
-    const email = (location.state as { email?: string } | null)?.email;
-    const onboardingComplete = (
-        location.state as {
-            onboardingComplete?: boolean;
-            profileName?: string;
-        } | null
-    )?.onboardingComplete;
-    const profileName = (
-        location.state as {
-            onboardingComplete?: boolean;
-            profileName?: string;
-        } | null
-    )?.profileName;
-
-    return (
-        <main className="login-shell">
-            <section className="login-panel login-panel-success">
-                <p className="login-eyebrow">LuckyReads</p>
-                <h1 className="login-title">You&apos;re In</h1>
-                <p className="login-subtitle">
-                    {profileName
-                        ? `Welcome, ${profileName}.`
-                        : email
-                          ? `Signed in as ${email}.`
-                          : onboardingComplete
-                            ? "Your reader profile is all set."
-                            : "Your sign-in was successful."}{" "}
-                    Home is still a work in progress, so this page is acting as
-                    the temporary landing spot for now.
-                </p>
-            </section>
-        </main>
-    );
-}
-
 export const routes: RouteObject[] = [
     {
         path: "/",
@@ -138,7 +101,7 @@ export const routes: RouteObject[] = [
     },
     {
         path: "/home",
-        element: createElement(ReaderHome),
+        element: createElement(Home),
     },
     {
         path: "/my-shelf",

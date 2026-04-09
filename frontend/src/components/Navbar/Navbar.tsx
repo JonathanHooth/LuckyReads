@@ -2,24 +2,37 @@ import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 
 export default function Navbar() {
+    const navItems = [
+        { label: "Home", to: "/home" },
+        { label: "My Shelf", to: "/my-shelf" },
+        { label: "Find Readers", to: "/find-readers" },
+        { label: "Messages", to: "/messages" },
+    ];
+
     return (
         <nav className="navbar">
-            {/* TODO: Add the actual logo to the navbar */}
-            <div className="navbar-logo">LuckyReads</div>
-            <div className="navbar-links">
-                <NavLink to="/home" className="navbar-link">
-                    Home
-                </NavLink>
-                <NavLink to="/my-shelf" className="navbar-link">
-                    My Shelf
-                </NavLink>
-                <NavLink to="/find-readers" className="navbar-link">
-                    Find Readers
-                </NavLink>
-                <NavLink to="/messages" className="navbar-link">
-                    Messages
-                </NavLink>
-                {/* TODO: add profile and logout option */}
+            <div className="navbar__inner">
+                <div className="navbar-logo">LuckyReads</div>
+
+                <div className="navbar-links">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) =>
+                                isActive
+                                    ? "navbar-link navbar-link--active"
+                                    : "navbar-link"
+                            }
+                        >
+                            {item.label}
+                        </NavLink>
+                    ))}
+                </div>
+
+                <div className="navbar-avatar" aria-label="User profile">
+                    GG
+                </div>
             </div>
         </nav>
     );
