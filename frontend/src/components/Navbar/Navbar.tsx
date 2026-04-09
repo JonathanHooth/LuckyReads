@@ -6,7 +6,6 @@ export default function Navbar() {
         { label: "Home", to: "/home" },
         { label: "My Shelf", to: "/my-shelf" },
         { label: "Find Readers", to: "/find-readers" },
-        { label: "Messages", to: "/messages" },
     ];
 
     return (
