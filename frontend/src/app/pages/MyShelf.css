@@ -44,3 +44,18 @@
     flex-wrap: wrap;
     gap: 24px;
 }
+
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+.add-book-button {
+    background-color: #3f4a34;
+    color: #c6b593;
+    padding: 10px 20px;
+    margin: 32px 0;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+}
