@@ -6,18 +6,15 @@ export const mockSearchResults: DisplayBook[] = [
         title: "Hello Beautiful",
         author: "Ann Napolitano",
         coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1675638895i/61771675.jpg",
-        genres: ["Contemporary", "Literary Fiction"],
     },
     {
         id: "mock-search-2",
         title: "The Hello Girls",
         author: "Brittney Morris",
-        genres: ["Young Adult", "Contemporary"],
     },
     {
         id: "mock-search-3",
         title: "Hello Stranger",
         author: "Katherine Center",
-        genres: ["Romance", "Contemporary"],
     },
 ];

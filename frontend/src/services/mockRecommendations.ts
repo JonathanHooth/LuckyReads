@@ -6,7 +6,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "To Kill a Mockingbird",
         author: "Harper Lee",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780060935467-M.jpg",
-        genres: ["Classics", "Literary Fiction"],
         matchPercentage: 94,
     },
     {
@@ -14,7 +13,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "Pride and Prejudice",
         author: "Jane Austen",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg",
-        genres: ["Romance", "Classics"],
         matchPercentage: 91,
     },
     {
@@ -22,7 +20,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "Lion, the Witch, and the Wardrobe",
         author: "C.S. Lewis",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780064404990-M.jpg",
-        genres: ["Fantasy", "Adventure"],
         matchPercentage: 88,
     },
     {
@@ -30,7 +27,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "The Great Gatsby",
         author: "F. Scott Fitzgerald",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780743273565-M.jpg",
-        genres: ["Classics", "Historical"],
         matchPercentage: 86,
     },
     {
@@ -38,7 +34,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "Frankenstein",
         author: "Mary Shelley",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780553212471-M.jpg",
-        genres: ["Gothic", "Science Fiction"],
         matchPercentage: 89,
     },
     {
@@ -46,7 +41,6 @@ export const mockRecommendations: DisplayBook[] = [
         title: "Beloved",
         author: "Toni Morrison",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9781400033416-M.jpg",
-        genres: ["Literary Fiction", "Historical"],
         matchPercentage: 93,
     },
 ];
