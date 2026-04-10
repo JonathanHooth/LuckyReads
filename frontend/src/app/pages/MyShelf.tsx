@@ -40,7 +40,6 @@ export default function MyShelf() {
     async function fetchShelf() {
         try {
             const response = await apiClient.get("/books/shelf/");
-            console.log("shelf response:", response.data);
 
             const shelfEntries: ShelfEntry[] = Array.isArray(response.data)
                 ? response.data
@@ -67,11 +66,6 @@ export default function MyShelf() {
 
     async function handleAddBook(openlibraryKey: string, status: BookStatus) {
         try {
-            console.log("Sending:", {
-                openlibrary_key: openlibraryKey,
-                status,
-            });
-
             await apiClient.post("/books/shelf/", {
                 openlibrary_key: openlibraryKey,
                 status,
