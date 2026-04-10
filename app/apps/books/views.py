@@ -1,14 +1,15 @@
 import requests
+from django.core.exceptions import PermissionDenied
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, DestroyModelMixin, UpdateModelMixin
 from rest_framework import filters, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from apps.core.abstracts.viewsets import ViewSetBase
-from apps.books.models import Book, Review, ShelfEntry
+from apps.books.models import Author, Book, Review, ShelfEntry
 from apps.books.serializers import BookSerializer, ReviewSerializer, ShelfEntrySerializer
 
 class BookListView(generics.ListAPIView):
@@ -21,6 +22,7 @@ class BookListView(generics.ListAPIView):
     queryset = Book.objects.prefetch_related('authors').all()
     filter_backends = [filters.SearchFilter]
     search_fields = ['title', 'authors__name']
+
 
 class OpenLibrarySearchView(APIView):
     """
@@ -78,50 +80,4 @@ class OpenLibrarySearchView(APIView):
         ]
 
         return Response(results)
-
-class ReviewViewSet(CreateModelMixin, ListModelMixin, ViewSetBase):
-    """
-    POST /api/reviews/
-    """
-
-    serializer_class = ReviewSerializer
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return Review.objects.none()
-        return Review.objects.filter(shelf_entry__user=self.request.user).select_related('shelf_entry__book')
-
-    def create(self, request, *args, **kwargs):
-        shelf_entry_id = request.data.get('shelf_entry_id')
-        shelf_entry = generics.get_object_or_404(ShelfEntry, id=shelf_entry_id)
-        
-        if shelf_entry.user != request.user:
-            return Response(
-                {'error': 'User can only review books on their shelf'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        review, created = Review.objects.update_or_create(
-            shelf_entry_id=shelf_entry_id,
-            defaults={
-                'rating': request.data.get('rating'),
-                'review_text': request.data.get('review_text', '')
-            }
-        )
-        return Response(
-            ReviewSerializer(review).data,
-            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        )
-
-class ShelfView(generics.ListCreateAPIView):
-    """
-    GET /api/shelf/
-    POST /api/shelf/
-    """
-
-    serializer_class = ShelfEntrySerializer
-
-    def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return ShelfEntry.objects.none()
-        return ShelfEntry.objects.filter(user=self.request.user).select_related('book', 'review').prefetch_related('book__authors')
+    

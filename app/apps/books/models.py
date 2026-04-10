@@ -1,5 +1,9 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import Avg
+
+from django.contrib.auth.models import BaseUserManager
+from apps.core.abstracts.models import ManagerBase, UniqueModel
 
 class Author(models.Model):
     openlibrary_key = models.CharField(
@@ -16,6 +20,16 @@ class Author(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BookManager(ManagerBase["Book"]):
+    """Manager for users."""
+
+
+    def get_or_create(self, defaults = None, **kwargs):
+
+        return super().get_or_create(defaults, **kwargs)
+
     
 class Book(models.Model):
     openlibrary_key = models.CharField(
@@ -39,6 +53,11 @@ class Book(models.Model):
 
     class Meta:
         db_table = 'books_book'
+
+    @property
+    def average_rating(self) -> float:
+        result = Review.objects.filter(shelf_entry__book=self).aggregate(Avg('rating'))
+        return result['rating__avg'] or 0.0
 
     def __str__(self):
         return self.title
@@ -88,8 +107,6 @@ class Review(models.Model):
         related_name='review'
     )
     rating = models.PositiveSmallIntegerField(
-        null=True,
-        blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(5)],
     )
     review_text = models.TextField(blank=True, default='')
@@ -100,7 +117,7 @@ class Review(models.Model):
         db_table = 'books_book_review'
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(rating__isnull=True) | (models.Q(rating__gte=1) & models.Q(rating__lte=5)),
+                condition=models.Q(rating__gte=1) & models.Q(rating__lte=5),
                 name='rating_between_1_and_5',
                 violation_error_message='Rating must be between 1 and 5'
             )
