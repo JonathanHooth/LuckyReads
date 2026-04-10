@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@400;500;700&display=swap");
+
 /* Global baseline only; Tailwind can replace this layer when adopted. */
 :root {
     --font-body: "DM Sans", "Avenir Next", "Segoe UI", sans-serif;
@@ -34,6 +36,7 @@ body {
     min-height: 100dvh;
     color: inherit;
     background: transparent;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
 }
 
