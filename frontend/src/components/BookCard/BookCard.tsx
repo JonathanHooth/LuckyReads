@@ -1,6 +1,6 @@
 import "./BookCard.css";
 
-type BookStatus = "want_to_read" | "reading" | "read";
+type BookStatus = "want_to_read" | "currently_reading" | "read";
 
 type BookCardProps = {
     title: string;
@@ -13,7 +13,6 @@ type BookCardProps = {
 export default function BookCard(props: BookCardProps) {
     return (
         <div className="book-card">
-            {/* consider using a placeholder image if coverUrl is not provided */}
             <img
                 className="book-card-cover"
                 src={props.coverUrl || "placeholder"}
@@ -30,7 +29,7 @@ export default function BookCard(props: BookCardProps) {
                     className="book-card-status"
                 >
                     <option value="want_to_read">Want to Read</option>
-                    <option value="reading">Reading</option>
+                    <option value="currently_reading">Reading</option>
                     <option value="read">Read</option>
                 </select>
             </div>

@@ -5,8 +5,15 @@ import BookCard from "../../components/BookCard/BookCard";
 import "./MyShelf.css";
 import AddBookModal from "../../components/AddBookModal/AddBookModal";
 
-type BookStatus = "want_to_read" | "reading" | "read";
+type BookStatus = "want_to_read" | "currently_reading" | "read";
 type ShelfFilter = "all" | BookStatus;
+
+type SearchResult = {
+    openlibrary_key: string;
+    title: string;
+    authors?: string[];
+    cover_url?: string;
+};
 
 type ShelfBook = {
     id: number;
@@ -64,10 +71,13 @@ export default function MyShelf() {
         }
     }
 
-    async function handleAddBook(openlibraryKey: string, status: BookStatus) {
+    async function handleAddBook(book: SearchResult, status: BookStatus) {
         try {
             await apiClient.post("/books/shelf/", {
-                openlibrary_key: openlibraryKey,
+                openlibrary_key: book.openlibrary_key,
+                title: book.title,
+                cover_url: book.cover_url || "",
+                authors: book.authors || [],
                 status,
             });
             await fetchShelf();
@@ -76,12 +86,9 @@ export default function MyShelf() {
         }
     }
 
-    function handleStatusChange(bookId: number, newStatus: BookStatus) {
-        setBooks((prevBooks) =>
-            prevBooks.map((book) =>
-                book.id === bookId ? { ...book, status: newStatus } : book,
-            ),
-        );
+    async function handleStatusChange(bookId: number, newStatus: BookStatus) {
+        await apiClient.patch(`/books/shelf/${bookId}/`, { status: newStatus });
+        await fetchShelf();
     }
 
     const filteredBooks =
@@ -102,8 +109,8 @@ export default function MyShelf() {
                         All Books
                     </button>
                     <button
-                        className={`shelf-tab ${activeTab === "reading" ? "active" : ""}`}
-                        onClick={() => setActiveTab("reading")}
+                        className={`shelf-tab ${activeTab === "currently_reading" ? "active" : ""}`}
+                        onClick={() => setActiveTab("currently_reading")}
                     >
                         Reading
                     </button>

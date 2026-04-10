@@ -2,7 +2,7 @@ import { useState } from "react";
 import { apiClient } from "../../api/client";
 import "./AddBookModal.css";
 
-type BookStatus = "want_to_read" | "reading" | "read";
+type BookStatus = "want_to_read" | "currently_reading" | "read";
 
 type SearchResult = {
     openlibrary_key: string;
@@ -14,7 +14,7 @@ type SearchResult = {
 type AddBookModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onAddBook: (openlibraryKey: string, status: BookStatus) => void;
+    onAddBook: (book: SearchResult, status: BookStatus) => Promise<void>;
 };
 
 export default function AddBookModal(props: AddBookModalProps) {
@@ -39,9 +39,9 @@ export default function AddBookModal(props: AddBookModalProps) {
             console.error("Failed to search books:", error);
         }
     }
-    async function handleAddClick(openlibraryKey: string) {
+    async function handleAddClick(book: SearchResult) {
         try {
-            await props.onAddBook(openlibraryKey, selectedStatus);
+            await props.onAddBook(book, selectedStatus);
             resetModal();
             props.onClose();
         } catch (error) {
@@ -98,9 +98,7 @@ export default function AddBookModal(props: AddBookModalProps) {
                                 </p>
                                 <button
                                     className="add-to-shelf-button"
-                                    onClick={() =>
-                                        handleAddClick(result.openlibrary_key)
-                                    }
+                                    onClick={() => handleAddClick(result)}
                                 >
                                     Add to Shelf
                                 </button>
