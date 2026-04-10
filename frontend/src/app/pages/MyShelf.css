@@ -2,6 +2,13 @@
     min-height: 100vh;
 }
 
+.my-shelf-title {
+    color: #3f4a34;
+    font-family: var(--font-display);
+    line-height: 1;
+    font-weight: 500;
+}
+
 .my-shelf-container {
     width: min(1200px, 90%);
     margin: 40px auto;

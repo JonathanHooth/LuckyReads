@@ -65,7 +65,6 @@ export default function MyShelf() {
         }
     }
 
-    // adds book to shelf
     async function handleAddBook(openlibraryKey: string, status: BookStatus) {
         try {
             console.log("Sending:", {
@@ -100,7 +99,7 @@ export default function MyShelf() {
         <div className="my-shelf">
             <Navbar />
             <div className="my-shelf-container">
-                <h1 className="profile-name">My Shelf</h1>
+                <h1 className="my-shelf-title">My Shelf</h1>
                 <div className="shelf-tabs">
                     <button
                         className={`shelf-tab ${activeTab === "all" ? "active" : ""}`}

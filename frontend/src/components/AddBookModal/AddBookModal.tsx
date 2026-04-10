@@ -63,7 +63,7 @@ export default function AddBookModal(props: AddBookModalProps) {
     return (
         <div className="modal">
             <div className="modal-content">
-                <h2>Add a Book</h2>
+                <h2 className="modal-title">Add a Book</h2>
                 <div className="modal-row">
                     <input
                         type="text"
