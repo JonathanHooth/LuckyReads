@@ -25,6 +25,10 @@ class ReviewSerializer(ModelSerializer):
     def validate_shelf_entry_id(self, value):
         "Validate given shelf entry to see if it is in the shelf"
 
+        #Skip validation on patch
+        if self.instance is not None:  # skip validation on update
+            return value
+
         request =  self.context["request"]
         shelf_entry = ShelfEntry.objects.filter(id=value, user=request.user).first()
         if not shelf_entry:
@@ -40,6 +44,11 @@ class ReviewSerializer(ModelSerializer):
             defaults=validated_data
         )
         return review
+
+    def update(self, instance, validated_data):
+      #Get rid of shelf_entry_id
+      validated_data.pop('shelf_entry_id', None)
+      return super().update(instance, validated_data)
 
     class Meta:
         model = Review

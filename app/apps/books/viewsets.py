@@ -46,8 +46,6 @@ class ShelfViewSet(CreateModelMixin, ListModelMixin, DestroyModelMixin, UpdateMo
         return ShelfEntry.objects.none()
       return ShelfEntry.objects.filter(user=self.request.user).select_related('book', 'review').prefetch_related('book__authors')
     
-
-    
     def create(self, request, *args, **kwargs):
       """Make a new Shelf entry, storing the book if not in db"""
     
@@ -81,4 +79,4 @@ class ShelfViewSet(CreateModelMixin, ListModelMixin, DestroyModelMixin, UpdateMo
       return Response(
         ShelfEntrySerializer(shelf_entry).data,
         status=status.HTTP_201_CREATED
-      ) 
+      )
