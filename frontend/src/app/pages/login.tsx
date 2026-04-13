@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { storeAuthToken, getApiErrorMessage } from "../../api/client";
+import { getApiErrorMessage } from "../../api/client";
 import { loginUser } from "../../api/auth";
+import { storeSession } from "../session";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
 
@@ -33,9 +34,7 @@ export default function Login() {
     try {
       const response = await loginUser(email.trim(), password);
 
-      if (response.token) {
-        storeAuthToken(response.token);
-      }
+      storeSession(response.token, response.user);
 
       navigate("/home", {
         state: {

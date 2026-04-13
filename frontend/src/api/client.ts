@@ -23,6 +23,40 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+function extractMessages(value: unknown): string[] {
+  if (typeof value === "string") {
+    return value.trim() ? [value] : [];
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return [String(value)];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => extractMessages(item));
+  }
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+
+    if (typeof record.detail === "string" && record.detail.trim()) {
+      return [record.detail];
+    }
+
+    if (typeof record.attr === "string" && typeof record.detail === "string") {
+      return [`${record.attr}: ${record.detail}`];
+    }
+
+    if (typeof record.code === "string" && Object.keys(record).length === 1) {
+      return [record.code];
+    }
+
+    return Object.values(record).flatMap((item) => extractMessages(item));
+  }
+
+  return [];
+}
+
 function normalizeFieldErrors(payload: unknown): ApiFieldErrors | undefined {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return undefined;
@@ -30,12 +64,9 @@ function normalizeFieldErrors(payload: unknown): ApiFieldErrors | undefined {
 
   const entries = Object.entries(payload as Record<string, unknown>)
     .map(([key, value]) => {
-      if (Array.isArray(value)) {
-        return [key, value.map((item) => String(item))] as const;
-      }
-
-      if (typeof value === "string") {
-        return [key, [value]] as const;
+      const messages = extractMessages(value);
+      if (messages.length > 0) {
+        return [key, messages] as const;
       }
 
       return null;
@@ -58,6 +89,13 @@ export function getApiErrorMessage(error: unknown): string {
 
       if (typeof record.detail === "string") {
         return record.detail;
+      }
+
+      if (Array.isArray(record.errors)) {
+        const errorMessages = extractMessages(record.errors);
+        if (errorMessages.length > 0) {
+          return errorMessages.join(" ");
+        }
       }
 
       const fieldErrors = normalizeFieldErrors(payload);
