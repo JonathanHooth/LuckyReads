@@ -73,8 +73,12 @@ export default function AddBookModal(props: AddBookModalProps) {
                     />
                 </div>
                 <div className="modal-buttons">
-                    <button onClick={handleSearch}>Search</button>
-                    <button onClick={handleClose}>Close</button>
+                    <button className="search-button" onClick={handleSearch}>
+                        Search
+                    </button>
+                    <button className="close-button" onClick={handleClose}>
+                        Close
+                    </button>
                 </div>
 
                 <div className="search-results">
