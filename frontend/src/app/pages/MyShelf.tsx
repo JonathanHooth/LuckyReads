@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import BookCard from "../../components/BookCard/BookCard";
 import "./MyShelf.css";
 import AddBookModal from "../../components/AddBookModal/AddBookModal";
+import RatingModal from "../../components/RatingModal/RatingModal";
 
 type BookStatus = "want_to_read" | "currently_reading" | "read";
 type ShelfFilter = "all" | BookStatus;
@@ -22,6 +23,8 @@ type ShelfBook = {
     author: string;
     status: BookStatus;
     coverUrl?: string;
+    rating?: number;
+    reviewId?: number;
 };
 
 type ShelfEntry = {
@@ -33,12 +36,20 @@ type ShelfEntry = {
         authors?: { name: string }[];
         cover_url?: string;
     };
+    review?: {
+        id: number;
+        rating: number;
+    };
 };
 
 export default function MyShelf() {
     const [activeTab, setActiveTab] = useState<ShelfFilter>("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+    const [selectedBook, setSelectedBook] = useState<ShelfBook | null>(null);
     const [books, setBooks] = useState<ShelfBook[]>([]);
+    const [initialRating, setInitialRating] = useState(0);
+    const [initialReviewText, setInitialReviewText] = useState("");
 
     useEffect(() => {
         fetchShelf();
@@ -63,6 +74,8 @@ export default function MyShelf() {
                             .join(", ") || "Unknown author",
                     status: entry.status,
                     coverUrl: entry.book?.cover_url || undefined,
+                    rating: entry.review?.rating,
+                    reviewId: entry.review?.id,
                 }),
             );
             setBooks(formattedBooks);
@@ -91,6 +104,71 @@ export default function MyShelf() {
         await fetchShelf();
     }
 
+    async function openRatingModal(book: ShelfBook) {
+        setSelectedBook(book);
+
+        let fetchedRating = book.rating || 0;
+        let fetchedReviewText = "";
+
+        if (book.reviewId) {
+            try {
+                const response = await apiClient.get("/books/reviews/");
+
+                const reviews = Array.isArray(response.data)
+                    ? response.data
+                    : response.data.results || [];
+
+                const existingReview = reviews.find(
+                    (review: {
+                        id: number;
+                        rating: number;
+                        review_text: string;
+                    }) => review.id === book.reviewId,
+                );
+
+                if (existingReview) {
+                    fetchedRating = existingReview.rating || 0;
+                    fetchedReviewText = existingReview.review_text || "";
+                }
+            } catch (error) {
+                console.error("Failed to fetch review:", error);
+            }
+        }
+
+        setInitialRating(fetchedRating);
+        setInitialReviewText(fetchedReviewText);
+        setIsRatingModalOpen(true);
+    }
+
+    async function handleSubmitRating(rating: number, review: string) {
+        if (!selectedBook) return;
+
+        try {
+            if (selectedBook.reviewId) {
+                await apiClient.patch(
+                    `/books/reviews/${selectedBook.reviewId}/`,
+                    {
+                        rating,
+                        review_text: review,
+                    },
+                );
+            } else {
+                await apiClient.post("/books/reviews/", {
+                    shelf_entry_id: selectedBook.id,
+                    rating,
+                    review_text: review,
+                });
+            }
+            setIsRatingModalOpen(false);
+            setSelectedBook(null);
+            setInitialRating(0);
+            setInitialReviewText("");
+            await fetchShelf();
+        } catch (error) {
+            console.error("Failed to submit rating:", error);
+        }
+    }
+
     const filteredBooks =
         activeTab === "all"
             ? books
@@ -101,30 +179,38 @@ export default function MyShelf() {
             <Navbar />
             <div className="my-shelf-container">
                 <h1 className="my-shelf-title">My Shelf</h1>
-                <div className="shelf-tabs">
+                <div className="shelf-header">
+                    <div className="shelf-tabs">
+                        <button
+                            className={`shelf-tab ${activeTab === "all" ? "active" : ""}`}
+                            onClick={() => setActiveTab("all")}
+                        >
+                            All Books
+                        </button>
+                        <button
+                            className={`shelf-tab ${activeTab === "currently_reading" ? "active" : ""}`}
+                            onClick={() => setActiveTab("currently_reading")}
+                        >
+                            Reading
+                        </button>
+                        <button
+                            className={`shelf-tab ${activeTab === "read" ? "active" : ""}`}
+                            onClick={() => setActiveTab("read")}
+                        >
+                            Read
+                        </button>
+                        <button
+                            className={`shelf-tab ${activeTab === "want_to_read" ? "active" : ""}`}
+                            onClick={() => setActiveTab("want_to_read")}
+                        >
+                            Want to Read
+                        </button>
+                    </div>
                     <button
-                        className={`shelf-tab ${activeTab === "all" ? "active" : ""}`}
-                        onClick={() => setActiveTab("all")}
+                        className="add-book-button"
+                        onClick={() => setIsModalOpen(true)}
                     >
-                        All Books
-                    </button>
-                    <button
-                        className={`shelf-tab ${activeTab === "currently_reading" ? "active" : ""}`}
-                        onClick={() => setActiveTab("currently_reading")}
-                    >
-                        Reading
-                    </button>
-                    <button
-                        className={`shelf-tab ${activeTab === "read" ? "active" : ""}`}
-                        onClick={() => setActiveTab("read")}
-                    >
-                        Read
-                    </button>
-                    <button
-                        className={`shelf-tab ${activeTab === "want_to_read" ? "active" : ""}`}
-                        onClick={() => setActiveTab("want_to_read")}
-                    >
-                        Want to Read
+                        Add Book
                     </button>
                 </div>
                 <div className="book-grid">
@@ -138,21 +224,27 @@ export default function MyShelf() {
                             onStatusChange={(newStatus) =>
                                 handleStatusChange(book.id, newStatus)
                             }
+                            onRateClick={() => openRatingModal(book)}
                         />
                     ))}
-                </div>
-                <div className="container">
-                    <button
-                        className="add-book-button"
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        Add Book
-                    </button>
                 </div>
                 <AddBookModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onAddBook={handleAddBook}
+                />
+                <RatingModal
+                    isOpen={isRatingModalOpen}
+                    onClose={() => {
+                        setIsRatingModalOpen(false);
+                        setSelectedBook(null);
+                        setInitialRating(0);
+                        setInitialReviewText("");
+                    }}
+                    onSubmit={handleSubmitRating}
+                    bookTitle={selectedBook?.title || ""}
+                    initialRating={initialRating}
+                    initialReview={initialReviewText}
                 />
             </div>
         </div>
