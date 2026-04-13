@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
 import {
     createBrowserRouter,
     Navigate,
@@ -9,19 +9,44 @@ import Login from "./pages/login";
 import Onboarding from "./pages/onboarding";
 import MyShelf from "./pages/MyShelf";
 import Home from "./pages/Home";
+import { isAuthenticated } from "./session";
+
+function AuthRedirect() {
+    return <Navigate to={isAuthenticated() ? "/home" : "/login"} replace />;
+}
+
+function PublicOnlyRoute({ children }: { children: ReactElement }) {
+    if (isAuthenticated()) {
+        return <Navigate to="/home" replace />;
+    }
+
+    return children;
+}
+
+function ProtectedRoute({ children }: { children: ReactElement }) {
+    if (!isAuthenticated()) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return children;
+}
 
 export const routes: RouteObject[] = [
     {
         path: "/",
-        element: createElement(Navigate, { to: "/login", replace: true }),
+        element: createElement(AuthRedirect),
     },
     {
         path: "/login",
-        element: createElement(Login),
+        element: createElement(PublicOnlyRoute, {
+            children: createElement(Login),
+        }),
     },
     {
         path: "/forgot-password",
-        element: createElement(ForgotPassword),
+        element: createElement(PublicOnlyRoute, {
+            children: createElement(ForgotPassword),
+        }),
     },
     {
         path: "/onboarding",
@@ -29,15 +54,21 @@ export const routes: RouteObject[] = [
     },
     {
         path: "/signup",
-        element: createElement(Onboarding),
+        element: createElement(PublicOnlyRoute, {
+            children: createElement(Onboarding),
+        }),
     },
     {
         path: "/home",
-        element: createElement(Home),
+        element: createElement(ProtectedRoute, {
+            children: createElement(Home),
+        }),
     },
     {
         path: "/my-shelf",
-        element: createElement(MyShelf),
+        element: createElement(ProtectedRoute, {
+            children: createElement(MyShelf),
+        }),
     },
 ];
 
