@@ -1,13 +1,39 @@
-import { NavLink } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../../assets/luckyreadslogo_navbar.png";
+import { clearSession, getUserInitials } from "../../app/session";
 import "./Navbar.css";
 
 export default function Navbar() {
+    const navigate = useNavigate();
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
     const navItems = [
         { label: "Home", to: "/home" },
         { label: "My Shelf", to: "/my-shelf" },
         { label: "Find Readers", to: "/find-readers" },
     ];
+    const initials = getUserInitials();
+
+    useEffect(() => {
+        if (!menuOpen) {
+            return undefined;
+        }
+
+        const handlePointerDown = (event: MouseEvent) => {
+            if (!menuRef.current?.contains(event.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        return () => document.removeEventListener("mousedown", handlePointerDown);
+    }, [menuOpen]);
+
+    const handleLogout = () => {
+        clearSession();
+        navigate("/login", { replace: true });
+    };
 
     return (
         <nav className="navbar">
@@ -32,8 +58,29 @@ export default function Navbar() {
                     ))}
                 </div>
 
-                <div className="navbar-avatar" aria-label="User profile">
-                    GG
+                <div className="navbar-profile" ref={menuRef}>
+                    <button
+                        type="button"
+                        className="navbar-avatar"
+                        aria-label="Open profile menu"
+                        aria-expanded={menuOpen}
+                        onClick={() => setMenuOpen((current) => !current)}
+                    >
+                        {initials}
+                    </button>
+
+                    {menuOpen ? (
+                        <div className="navbar-menu" role="menu" aria-label="Profile menu">
+                            <button
+                                type="button"
+                                className="navbar-menu__item"
+                                role="menuitem"
+                                onClick={handleLogout}
+                            >
+                                Log out
+                            </button>
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </nav>

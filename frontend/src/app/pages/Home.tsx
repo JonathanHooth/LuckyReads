@@ -6,14 +6,11 @@ import {
     searchBooks,
     type DisplayBook,
 } from "../../services/books";
-import { mockRecommendations } from "../../services/mockRecommendations";
-import { mockSearchResults } from "../../services/mockSearchResults";
 import "./Home.css";
 
 const FILTERS = ["All", "Books", "Authors"] as const;
 const SEARCHABLE_FILTERS = new Set(["All", "Books", "Authors"]);
 const SKELETON_COUNT = 6;
-const USE_MOCK_HOME_DATA = import.meta.env.VITE_USE_MOCK_HOME_DATA === "true";
 
 type FilterOption = (typeof FILTERS)[number];
 
@@ -39,13 +36,11 @@ export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
-    const [recommendations, setRecommendations] =
-        useState<DisplayBook[]>(mockRecommendations);
+    const [recommendations, setRecommendations] = useState<DisplayBook[]>([]);
     const [searchResults, setSearchResults] = useState<DisplayBook[]>([]);
     const [loadingRecommendations, setLoadingRecommendations] = useState(true);
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [error, setError] = useState("");
-    const [usingMockData, setUsingMockData] = useState(USE_MOCK_HOME_DATA);
 
     const trimmedQuery = searchQuery.trim();
     const hasSearchQuery = debouncedQuery.length > 0;
@@ -58,28 +53,17 @@ export default function Home() {
             setLoadingRecommendations(true);
             setError("");
 
-            if (USE_MOCK_HOME_DATA) {
-                setRecommendations(mockRecommendations);
-                setUsingMockData(true);
-                setLoadingRecommendations(false);
-                return;
-            }
-
             try {
                 const data = await fetchRecommendations();
                 if (!cancelled) {
-                    setRecommendations(
-                        data.length > 0 ? data : mockRecommendations,
-                    );
-                    setUsingMockData(data.length === 0);
+                    setRecommendations(data);
                 }
             } catch (requestError) {
                 if (!cancelled) {
-                    setRecommendations(mockRecommendations);
-                    setUsingMockData(true);
+                    setRecommendations([]);
                     setError(
                         requestError instanceof Error
-                            ? `${requestError.message} Showing sample recommendations while the API is in progress.`
+                            ? requestError.message
                             : "Could not load recommendations right now.",
                     );
                 }
@@ -128,35 +112,17 @@ export default function Home() {
             setLoadingSearch(true);
             setError("");
 
-            if (USE_MOCK_HOME_DATA) {
-                const filteredMockResults = mockSearchResults.filter((book) => {
-                    const haystack = `${book.title} ${book.author}`.toLowerCase();
-                    return haystack.includes(debouncedQuery.toLowerCase());
-                });
-                setSearchResults(filteredMockResults);
-                setUsingMockData(true);
-                setLoadingSearch(false);
-                return;
-            }
-
             try {
                 const data = await searchBooks(debouncedQuery);
                 if (!cancelled) {
                     setSearchResults(data);
-                    setUsingMockData(false);
                 }
             } catch (requestError) {
                 if (!cancelled) {
-                    const filteredMockResults = mockSearchResults.filter((book) => {
-                        const haystack =
-                            `${book.title} ${book.author}`.toLowerCase();
-                        return haystack.includes(debouncedQuery.toLowerCase());
-                    });
-                    setSearchResults(filteredMockResults);
-                    setUsingMockData(true);
+                    setSearchResults([]);
                     setError(
                         requestError instanceof Error
-                            ? `${requestError.message} Showing sample search results while the API is in progress.`
+                            ? requestError.message
                             : "Search is unavailable right now.",
                     );
                 }
@@ -243,12 +209,6 @@ export default function Home() {
                             {hasSearchQuery ? (
                                 <p className="home-results__subtitle">
                                     Showing results for "{debouncedQuery}"
-                                </p>
-                            ) : null}
-
-                            {usingMockData ? (
-                                <p className="home-results__meta">
-                                    Using sample data for frontend development.
                                 </p>
                             ) : null}
                         </div>

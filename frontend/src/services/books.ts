@@ -18,6 +18,10 @@ type ApiRecommendation = {
     score?: number | null;
 };
 
+type PaginatedResponse<T> = {
+    results?: T[] | null;
+};
+
 export type DisplayBook = {
     id: string;
     title: string;
@@ -59,15 +63,31 @@ function mapBook(book: ApiBook, recommendation?: ApiRecommendation): DisplayBook
     };
 }
 
+function unwrapListResponse<T>(payload: T[] | PaginatedResponse<T>): T[] {
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (payload && Array.isArray(payload.results)) {
+        return payload.results;
+    }
+
+    return [];
+}
+
 export async function fetchRecommendations(): Promise<DisplayBook[]> {
-    const response = await apiClient.get<ApiRecommendation[]>("/recommendations/books/");
-    return response.data.map((item) => mapBook(item.book ?? {}, item));
+    const response = await apiClient.get<ApiRecommendation[] | PaginatedResponse<ApiRecommendation>>(
+        "/recommendations/books/",
+    );
+    return unwrapListResponse(response.data).map((item) =>
+        mapBook(item.book ?? {}, item),
+    );
 }
 
 export async function searchBooks(query: string): Promise<DisplayBook[]> {
-    const response = await apiClient.get<ApiBook[]>("/books/", {
+    const response = await apiClient.get<ApiBook[] | PaginatedResponse<ApiBook>>("/books/", {
         params: { search: query },
     });
 
-    return response.data.map((book) => mapBook(book));
+    return unwrapListResponse(response.data).map((book) => mapBook(book));
 }

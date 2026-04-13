@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../api/auth";
-import { getApiErrorMessage, storeAuthToken } from "../../api/client";
+import { getApiErrorMessage } from "../../api/client";
+import { storeSession } from "../session";
 import AuthField from "../../components/auth/AuthField";
 import AuthShell from "../../components/auth/AuthShell";
 
@@ -103,7 +104,7 @@ export default function SignupFlow() {
       });
 
       if (response.token) {
-        storeAuthToken(response.token);
+        storeSession(response.token, response.user);
 
         navigate("/home", {
           state: {
