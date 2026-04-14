@@ -127,7 +127,7 @@ class User(AbstractBaseUser, PermissionsMixin, UniqueModel):
 
       return super().clean()
     
-class Buddies(UniqueModel):
+class BuddyRelationship(UniqueModel):
     """
     Represents a one-way buddy relationship between two users.
     The user field is the user who added the buddy.
