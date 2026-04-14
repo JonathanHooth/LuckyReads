@@ -91,7 +91,7 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
         if target_user == request.user:
             return Response(
                 {'error': 'A user cannot be their own buddy'},
-                status=status.status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST
             )
         
         relationship, was_created = BuddyRelationship.objects.get_or_create(
