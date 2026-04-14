@@ -3,11 +3,23 @@ import type { DisplayBook } from "../../services/books";
 
 type BookCardProps = {
     book: DisplayBook;
+    onClick?: () => void;
 };
 
-export default function BookCard({ book }: BookCardProps) {
+export default function BookCard({ book, onClick }: BookCardProps) {
     return (
-        <article className="home-book-card">
+        <article
+            className="home-book-card"
+            onClick={onClick}
+            role={onClick ? "button" : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            style={{ cursor: onClick ? "pointer" : undefined }}
+            onKeyPress={onClick ? (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    onClick();
+                }
+            } : undefined}
+        >
             <div className="home-book-card__media">
                 {book.coverUrl ? (
                     <img
