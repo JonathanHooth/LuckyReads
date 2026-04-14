@@ -10,6 +10,7 @@ import Onboarding from "./pages/onboarding";
 import MyShelf from "./pages/MyShelf";
 import Home from "./pages/Home";
 import FindReaders from "./pages/FindReaders";
+import Profile from "./pages/Profile";
 import { isAuthenticated } from "./session";
 
 function AuthRedirect() {
@@ -75,6 +76,12 @@ export const routes: RouteObject[] = [
         path: "/find-readers",
         element: createElement(ProtectedRoute, {
             children: createElement(FindReaders),
+        }),
+    },
+    {
+        path: "/profile",
+        element: createElement(ProtectedRoute, {
+            children: createElement(Profile),
         }),
     },
 ];

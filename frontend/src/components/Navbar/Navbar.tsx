@@ -35,6 +35,11 @@ export default function Navbar() {
         navigate("/login", { replace: true });
     };
 
+    const handleProfile = () => {
+        setMenuOpen(false);
+        navigate("/profile");
+    };
+
     return (
         <nav className="navbar">
             <div className="navbar__inner">
@@ -71,6 +76,14 @@ export default function Navbar() {
 
                     {menuOpen ? (
                         <div className="navbar-menu" role="menu" aria-label="Profile menu">
+                            <button
+                                type="button"
+                                className="navbar-menu__item"
+                                role="menuitem"
+                                onClick={handleProfile}
+                            >
+                                Profile
+                            </button>
                             <button
                                 type="button"
                                 className="navbar-menu__item"
