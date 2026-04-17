@@ -86,7 +86,9 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
     @action(detail=True, methods=['post'], url_path="buddy")
     def add_buddy(self, request, *args, **kwargs):
         """Add the specified user as a buddy"""
-        target_user = self.get_object()
+        target_user = generics.get_object_or_404(
+            User, id=self.kwargs['pk'], is_active=True
+        )
 
         if target_user == request.user:
             return Response(
@@ -113,7 +115,9 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
     @action(detail=True, methods=['get'], url_path="buddies")
     def list_buddies(self, request, *args, **kwargs):
         """Returns the specified user's buddies."""
-        target_user = self.get_object()
+        target_user = generics.get_object_or_404(
+            User, id=self.kwargs['pk'], is_active=True
+        )
         relationships = BuddyRelationship.objects.filter(
             user=target_user
         ).select_related("buddy")
@@ -125,7 +129,9 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
     @action(detail=True, methods=["get"], url_path="buddies/(?P<buddy_id>[^/.]+)")
     def check_buddy(self, request, buddy_id=None, *args, **kwargs):
         """Returns whether the specified user and another user are buddies."""
-        target_user = self.get_object()
+        target_user = generics.get_object_or_404(
+            User, id=self.kwargs['pk'], is_active=True
+        )
         buddy = generics.get_object_or_404(User, id=buddy_id, is_active=True)
 
         are_buddies = BuddyRelationship.objects.filter(
@@ -138,7 +144,9 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
     @add_buddy.mapping.delete
     def remove_buddy(self, request, *args, **kwargs):
         """Remove the specified user as a buddy"""
-        target_user = self.get_object()
+        target_user = generics.get_object_or_404(
+            User, id=self.kwargs['pk'], is_active=True
+        )
 
         was_deleted, _ = BuddyRelationship.objects.filter(
             user=request.user,
