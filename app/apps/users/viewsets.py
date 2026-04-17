@@ -126,14 +126,20 @@ class UserViewSet(mixins.RetrieveModelMixin, ViewSetBase):
         )
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="buddies/(?P<buddy_id>[^/.]+)")
+    @action(detail=True, methods=["get"], url_path="buddies/check")
     def check_buddy(self, request, buddy_id=None, *args, **kwargs):
         """Returns whether the specified user and another user are buddies."""
         target_user = generics.get_object_or_404(
             User, id=self.kwargs['pk'], is_active=True
         )
-        buddy = generics.get_object_or_404(User, id=buddy_id, is_active=True)
+        buddy_id = request.query_params.get('buddy_id')
+        if not buddy_id:
+            return Response(
+                {'error': 'buddy_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        buddy = generics.get_object_or_404(User, id=buddy_id, is_active=True)
         are_buddies = BuddyRelationship.objects.filter(
             user=target_user,
             buddy=buddy,
