@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 
 from apps.core.abstracts.serializers import ModelSerializer, ModelSerializerBase
-from apps.users.models import User
+from apps.users.models import User, BuddyRelationship
 
 class UserSerializer(ModelSerializer):
 
@@ -71,3 +71,11 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('User account is disabled.')
         data['user'] = user
         return data
+
+class BuddyRelationshipSerializer(ModelSerializer):
+   buddy = PublicUserSerializer(read_only=True)
+
+   class Meta:
+      model = BuddyRelationship
+      fields = [*ModelSerializerBase.default_fields, 'buddy']
+      read_only_fields = ['buddy']
