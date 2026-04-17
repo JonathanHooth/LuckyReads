@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import BookCard from "../../components/books/BookCard";
+import BookDetail, { type BookDetailData } from "../../components/BookDetail/BookDetail";
 import {
     fetchRecommendations,
     searchBooks,
@@ -41,6 +42,8 @@ export default function Home() {
     const [loadingRecommendations, setLoadingRecommendations] = useState(true);
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [error, setError] = useState("");
+    const [selectedBook, setSelectedBook] = useState<BookDetailData | null>(null);
+    const [isBookDetailOpen, setIsBookDetailOpen] = useState(false);
 
     const trimmedQuery = searchQuery.trim();
     const hasSearchQuery = debouncedQuery.length > 0;
@@ -153,6 +156,17 @@ export default function Home() {
         return `${activeFilter} search is not connected yet. Try All or Books for now.`;
     }, [activeFilter, hasSearchQuery, searchSupported]);
 
+    const handleBookClick = (book: DisplayBook) => {
+        setSelectedBook({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            coverUrl: book.coverUrl,
+            matchPercentage: book.matchPercentage,
+        });
+        setIsBookDetailOpen(true);
+    };
+
     return (
         <div className="home-page">
             <Navbar />
@@ -249,13 +263,25 @@ export default function Home() {
                         {!helperMessage && !isLoading && cards.length > 0 ? (
                             <div className="home-grid">
                                 {cards.map((book) => (
-                                    <BookCard key={book.id} book={book} />
+                                    <BookCard
+                                        key={book.id}
+                                        book={book}
+                                        onClick={() => handleBookClick(book)}
+                                    />
                                 ))}
                             </div>
                         ) : null}
                     </section>
                 </div>
             </main>
+
+            {selectedBook && (
+                <BookDetail
+                    book={selectedBook}
+                    isOpen={isBookDetailOpen}
+                    onClose={() => setIsBookDetailOpen(false)}
+                />
+            )}
         </div>
     );
 }
