@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import BookCard from "../../components/books/BookCard";
 import BookDetail, { type BookDetailData } from "../../components/BookDetail/BookDetail";
@@ -9,11 +9,7 @@ import {
 } from "../../services/books";
 import "./Home.css";
 
-const FILTERS = ["All", "Books", "Authors"] as const;
-const SEARCHABLE_FILTERS = new Set(["All", "Books", "Authors"]);
 const SKELETON_COUNT = 6;
-
-type FilterOption = (typeof FILTERS)[number];
 
 function SearchIcon() {
     return (
@@ -36,7 +32,6 @@ function SearchIcon() {
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
-    const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
     const [recommendations, setRecommendations] = useState<DisplayBook[]>([]);
     const [searchResults, setSearchResults] = useState<DisplayBook[]>([]);
     const [loadingRecommendations, setLoadingRecommendations] = useState(true);
@@ -47,7 +42,6 @@ export default function Home() {
 
     const trimmedQuery = searchQuery.trim();
     const hasSearchQuery = debouncedQuery.length > 0;
-    const searchSupported = SEARCHABLE_FILTERS.has(activeFilter);
 
     useEffect(() => {
         let cancelled = false;
@@ -102,13 +96,6 @@ export default function Home() {
             return;
         }
 
-        if (!searchSupported) {
-            setLoadingSearch(false);
-            setSearchResults([]);
-            setError("");
-            return;
-        }
-
         let cancelled = false;
 
         async function runSearch() {
@@ -141,20 +128,12 @@ export default function Home() {
         return () => {
             cancelled = true;
         };
-    }, [debouncedQuery, searchSupported]);
+    }, [debouncedQuery]);
 
     const heading = hasSearchQuery ? "Search Results" : "Recommended For You";
     const cards = hasSearchQuery ? searchResults : recommendations;
     const isLoading = hasSearchQuery ? loadingSearch : loadingRecommendations;
     const showInlineWarning = Boolean(error) && cards.length > 0;
-
-    const helperMessage = useMemo(() => {
-        if (!hasSearchQuery || searchSupported) {
-            return "";
-        }
-
-        return `${activeFilter} search is not connected yet. Try All or Books for now.`;
-    }, [activeFilter, hasSearchQuery, searchSupported]);
 
     const handleBookClick = (book: DisplayBook) => {
         setSelectedBook({
@@ -189,27 +168,6 @@ export default function Home() {
                                 placeholder="Search for books or authors..."
                             />
                         </label>
-
-                        <div
-                            className="home-filters"
-                            role="tablist"
-                            aria-label="Search filters"
-                        >
-                            {FILTERS.map((filter) => (
-                                <button
-                                    key={filter}
-                                    type="button"
-                                    className={
-                                        filter === activeFilter
-                                            ? "home-filter home-filter--active"
-                                            : "home-filter"
-                                    }
-                                    onClick={() => setActiveFilter(filter)}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </section>
@@ -227,25 +185,19 @@ export default function Home() {
                             ) : null}
                         </div>
 
-                        {helperMessage ? (
-                            <div className="home-state home-state--empty">
-                                <p>{helperMessage}</p>
-                            </div>
-                        ) : null}
-
-                        {!helperMessage && error && !showInlineWarning ? (
+                        {error && !showInlineWarning ? (
                             <div className="home-state home-state--error" role="alert">
                                 <p>{error}</p>
                             </div>
                         ) : null}
 
-                        {!helperMessage && showInlineWarning ? (
+                        {showInlineWarning ? (
                             <div className="home-inline-warning" role="status">
                                 <p>{error}</p>
                             </div>
                         ) : null}
 
-                        {!helperMessage && isLoading ? (
+                        {isLoading ? (
                             <div className="home-grid" aria-hidden="true">
                                 {Array.from({ length: SKELETON_COUNT }, (_, index) => (
                                     <div key={index} className="home-card-skeleton" />
@@ -253,14 +205,14 @@ export default function Home() {
                             </div>
                         ) : null}
 
-                        {!helperMessage && !showInlineWarning && !error && !isLoading && cards.length === 0 ? (
+                        {!showInlineWarning && !error && !isLoading && cards.length === 0 ? (
                             <div className="home-state home-state--empty">
                                 <p>No results found.</p>
                                 <p>Try a different title, author, or keyword.</p>
                             </div>
                         ) : null}
 
-                        {!helperMessage && !isLoading && cards.length > 0 ? (
+                        {!isLoading && cards.length > 0 ? (
                             <div className="home-grid">
                                 {cards.map((book) => (
                                     <BookCard
