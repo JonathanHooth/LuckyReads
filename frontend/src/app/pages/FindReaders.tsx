@@ -314,9 +314,6 @@ export default function FindReaders() {
                   onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </label>
-              <p className="find-readers-search__hint">
-                Username search currently matches the backend user search endpoint exactly.
-              </p>
             </section>
           </div>
         </div>

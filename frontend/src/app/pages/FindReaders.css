@@ -101,16 +101,6 @@
   color: #6f725e;
 }
 
-.find-readers-search__hint {
-  margin: 0.85rem auto 0;
-  width: 100%;
-  color: #d8d2c7;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.6;
-  text-align: center;
-}
-
 .find-readers-results {
   padding: 3rem 1.5rem 0;
 }
