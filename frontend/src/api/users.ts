@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import { normalizeAuthUser, type AuthUser } from "./auth";
+import type { AuthUser } from "./auth";
 
 export type PublicUser = {
   id: number;
@@ -15,22 +15,22 @@ export type BuddyRelationship = {
 
 export async function fetchCurrentUser(): Promise<AuthUser> {
   const { data } = await apiClient.get<AuthUser>("/users/me/");
-  return normalizeAuthUser(data);
+  return data;
 }
 
 export async function updateCurrentUser(
-  payload: Partial<Pick<AuthUser, "name" | "bio">>,
+  payload: Partial<Pick<AuthUser, "username" | "bio">>,
 ): Promise<AuthUser> {
-  const requestPayload: Partial<Pick<AuthUser, "bio">> & { username?: string } = {
+  const requestPayload: Partial<Pick<AuthUser, "username" | "bio">> = {
     bio: payload.bio,
   };
 
-  if (payload.name !== undefined) {
-    requestPayload.username = payload.name;
+  if (payload.username !== undefined) {
+    requestPayload.username = payload.username;
   }
 
   const { data } = await apiClient.patch<AuthUser>("/users/me/", requestPayload);
-  return normalizeAuthUser(data);
+  return data;
 }
 
 export async function searchUserByUsername(username: string): Promise<PublicUser> {

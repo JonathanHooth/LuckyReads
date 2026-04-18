@@ -11,9 +11,9 @@ export default function Profile() {
   const navigate = useNavigate();
   const storedUser = getStoredUser();
   const [user, setUser] = useState<AuthUser | null>(storedUser);
-  const [name, setName] = useState(storedUser?.name ?? "");
+  const [username, setUsername] = useState(storedUser?.username ?? "");
   const [bio, setBio] = useState(storedUser?.bio ?? "");
-  const [initialName, setInitialName] = useState(storedUser?.name ?? "");
+  const [initialUsername, setInitialUsername] = useState(storedUser?.username ?? "");
   const [initialBio, setInitialBio] = useState(storedUser?.bio ?? "");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,9 +28,9 @@ export default function Profile() {
       try {
         const currentUser = await fetchCurrentUser();
         setUser(currentUser);
-        setName(currentUser.name ?? "");
+        setUsername(currentUser.username ?? "");
         setBio(currentUser.bio ?? "");
-        setInitialName(currentUser.name ?? "");
+        setInitialUsername(currentUser.username ?? "");
         setInitialBio(currentUser.bio ?? "");
       } catch (err) {
         setError("Unable to load profile. Please try again.");
@@ -44,19 +44,19 @@ export default function Profile() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedInitialName = initialName.trim();
+    const trimmedUsername = username.trim();
+    const trimmedInitialUsername = initialUsername.trim();
     const trimmedBio = bio.trim();
-    const nameChanged = trimmedName !== trimmedInitialName;
+    const usernameChanged = trimmedUsername !== trimmedInitialUsername;
     const bioChanged = bio !== initialBio;
 
-    if (!trimmedName) {
-      setError("Name cannot be empty.");
+    if (!trimmedUsername) {
+      setError("Username cannot be empty.");
       setSuccess("");
       return;
     }
 
-    if (!nameChanged && !bioChanged) {
+    if (!usernameChanged && !bioChanged) {
       setSuccess("No changes to save.");
       setError("");
       return;
@@ -68,14 +68,14 @@ export default function Profile() {
 
     try {
       const updatedUser = await updateCurrentUser({
-        ...(nameChanged ? { name: trimmedName } : {}),
+        ...(usernameChanged ? { username: trimmedUsername } : {}),
         ...(bioChanged ? { bio: trimmedBio } : {}),
       });
       setUser(updatedUser);
       storeSession(undefined, updatedUser);
-      setName(updatedUser.name ?? trimmedName);
+      setUsername(updatedUser.username ?? trimmedUsername);
       setBio(updatedUser.bio ?? "");
-      setInitialName(updatedUser.name ?? trimmedName);
+      setInitialUsername(updatedUser.username ?? trimmedUsername);
       setInitialBio(updatedUser.bio ?? "");
       setSuccess("Profile updated successfully.");
     } catch (err) {
@@ -125,12 +125,12 @@ export default function Profile() {
             </label>
 
             <label>
-              Name
+              Username
               <input
                 type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Your display name"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                placeholder="Your username"
               />
             </label>
 

@@ -8,7 +8,6 @@ class UserSerializer(ModelSerializer):
 
   email = serializers.EmailField()
   username = serializers.CharField(required=False)
-  name = serializers.CharField(required=False, write_only=True)
   bio = serializers.CharField(required=False, allow_blank=True)
 
   class Meta:
@@ -16,18 +15,12 @@ class UserSerializer(ModelSerializer):
     fields = [
       *ModelSerializerBase.default_fields,
       "username",
-      "name",
       "email",
       "bio",
     ]
 
   def validate(self, attrs: dict) -> dict:
     username = attrs.get("username")
-    name = attrs.get("name")
-
-    if name is not None:
-      username = name
-      attrs["username"] = name
 
     if username is not None:
       queryset = User.objects.filter(username=username)
@@ -36,23 +29,17 @@ class UserSerializer(ModelSerializer):
 
       if queryset.exists():
         raise serializers.ValidationError(
-          {"name": "A user with this name already exists."}
+          {"username": "A user with this username already exists."}
         )
 
     return attrs
 
   def create(self, validated_data: dict) -> User:
     """Create and return a user with encrypted password"""
-    name = validated_data.pop("name", None)
-    if name is not None and "username" not in validated_data:
-      validated_data["username"] = name
     return get_user_model().objects.create_user(**validated_data)
   
   def update(self, instance: User, validated_data: dict) -> User:
      """Update and return user"""
-     name = validated_data.pop("name", None)
-     if name is not None:
-       validated_data["username"] = name
      validated_data.pop("password", None)
      return super().update(instance, validated_data)
   

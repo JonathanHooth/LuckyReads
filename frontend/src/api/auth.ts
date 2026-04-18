@@ -4,7 +4,6 @@ export type AuthUser = {
   id: number;
   username: string;
   email: string;
-  name?: string;
   bio?: string;
   avatar_url?: string;
 };
@@ -18,36 +17,26 @@ export type RegisterPayload = {
   email: string;
   password: string;
   confirmPassword: string;
-  name: string;
+  username: string;
   bio?: string;
 };
-
-export function normalizeAuthUser(user: AuthUser): AuthUser {
-  return {
-    ...user,
-    name: user.name ?? user.username,
-  };
-}
 
 export async function registerUser({
   email,
   password,
   confirmPassword,
-  name,
+  username,
   bio,
 }: RegisterPayload) {
   const { data } = await apiClient.post<AuthResponse>("/users/register/", {
     email,
     password,
     confirm_password: confirmPassword,
-    username: name,
+    username,
     bio: bio ?? "",
   });
 
-  return {
-    ...data,
-    user: normalizeAuthUser(data.user),
-  };
+  return data;
 }
 
 export async function loginUser(email: string, password: string) {
@@ -56,8 +45,5 @@ export async function loginUser(email: string, password: string) {
     password,
   });
 
-  return {
-    ...data,
-    user: normalizeAuthUser(data.user),
-  };
+  return data;
 }
