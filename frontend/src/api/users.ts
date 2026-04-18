@@ -5,7 +5,6 @@ export type PublicUser = {
   id: number;
   username: string;
   bio?: string;
-  avatar_url?: string;
 };
 
 export type BuddyRelationship = {
