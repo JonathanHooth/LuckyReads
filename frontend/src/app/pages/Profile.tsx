@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import { fetchCurrentUser, updateCurrentUser } from "../../api/users";
+import { getApiErrorMessage } from "../../api/client";
 import { getStoredUser, storeSession } from "../session";
 import type { AuthUser } from "../../api/auth";
 import "./Profile.css";
@@ -12,6 +13,8 @@ export default function Profile() {
   const [user, setUser] = useState<AuthUser | null>(storedUser);
   const [name, setName] = useState(storedUser?.name ?? "");
   const [bio, setBio] = useState(storedUser?.bio ?? "");
+  const [initialName, setInitialName] = useState(storedUser?.name ?? "");
+  const [initialBio, setInitialBio] = useState(storedUser?.bio ?? "");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +30,8 @@ export default function Profile() {
         setUser(currentUser);
         setName(currentUser.name ?? "");
         setBio(currentUser.bio ?? "");
+        setInitialName(currentUser.name ?? "");
+        setInitialBio(currentUser.bio ?? "");
       } catch (err) {
         setError("Unable to load profile. Please try again.");
       } finally {
@@ -39,17 +44,42 @@ export default function Profile() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedInitialName = initialName.trim();
+    const trimmedBio = bio.trim();
+    const nameChanged = trimmedName !== trimmedInitialName;
+    const bioChanged = bio !== initialBio;
+
+    if (!trimmedName) {
+      setError("Name cannot be empty.");
+      setSuccess("");
+      return;
+    }
+
+    if (!nameChanged && !bioChanged) {
+      setSuccess("No changes to save.");
+      setError("");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
-      const updatedUser = await updateCurrentUser({ name: name.trim(), bio });
+      const updatedUser = await updateCurrentUser({
+        ...(nameChanged ? { name: trimmedName } : {}),
+        ...(bioChanged ? { bio: trimmedBio } : {}),
+      });
       setUser(updatedUser);
       storeSession(undefined, updatedUser);
+      setName(updatedUser.name ?? trimmedName);
+      setBio(updatedUser.bio ?? "");
+      setInitialName(updatedUser.name ?? trimmedName);
+      setInitialBio(updatedUser.bio ?? "");
       setSuccess("Profile updated successfully.");
     } catch (err) {
-      setError("Unable to save profile. Please try again.");
+      setError(getApiErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -91,7 +121,7 @@ export default function Profile() {
           <form className="profile-form" onSubmit={handleSubmit}>
             <label>
               Email
-              <input type="email" value={user.email} disabled />
+              <input type="email" value={user?.email ?? ""} disabled />
             </label>
 
             <label>

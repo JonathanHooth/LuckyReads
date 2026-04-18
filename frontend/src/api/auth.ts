@@ -22,6 +22,13 @@ export type RegisterPayload = {
   bio?: string;
 };
 
+export function normalizeAuthUser(user: AuthUser): AuthUser {
+  return {
+    ...user,
+    name: user.name ?? user.username,
+  };
+}
+
 export async function registerUser({
   email,
   password,
@@ -33,11 +40,14 @@ export async function registerUser({
     email,
     password,
     confirm_password: confirmPassword,
-    name,
+    username: name,
     bio: bio ?? "",
   });
 
-  return data;
+  return {
+    ...data,
+    user: normalizeAuthUser(data.user),
+  };
 }
 
 export async function loginUser(email: string, password: string) {
@@ -46,5 +56,8 @@ export async function loginUser(email: string, password: string) {
     password,
   });
 
-  return data;
+  return {
+    ...data,
+    user: normalizeAuthUser(data.user),
+  };
 }
