@@ -223,6 +223,15 @@
   line-height: 1.4;
 }
 
+.reader-card__note {
+  margin: -0.1rem 0 0;
+  color: #766a54;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 .reader-card__bio {
   margin: 0;
   color: #5a6452;

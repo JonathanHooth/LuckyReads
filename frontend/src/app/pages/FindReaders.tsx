@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import {
   addBuddy,
+  fetchBuddyRecommendations,
   checkBuddyStatus,
   fetchBuddies,
   fetchCurrentUser,
   removeBuddy,
   searchUserByUsername,
+  type BuddyRecommendation,
   type BuddyRelationship,
   type PublicUser,
 } from "../../api/users";
@@ -50,11 +52,13 @@ function ReaderCard({
   user,
   status,
   actionLoading,
+  note,
   onToggleBuddy,
 }: {
   user: PublicUser;
   status: "self" | "buddy" | "not_buddy";
   actionLoading: boolean;
+  note?: string;
   onToggleBuddy: (user: PublicUser, isBuddy: boolean) => void;
 }) {
   const displayName = getDisplayName(user);
@@ -75,6 +79,7 @@ function ReaderCard({
         <p className="reader-card__eyebrow">@{user.username}</p>
         <h3 className="reader-card__name">{displayName}</h3>
         <p className="reader-card__status">{badge}</p>
+        {note ? <p className="reader-card__note">{note}</p> : null}
         <p className="reader-card__bio">
           {user.bio?.trim() || "This reader has not added a bio yet."}
         </p>
@@ -104,9 +109,11 @@ export default function FindReaders() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [buddies, setBuddies] = useState<BuddyRelationship[]>([]);
+  const [recommendations, setRecommendations] = useState<BuddyRecommendation[]>([]);
   const [searchResult, setSearchResult] = useState<PublicUser | null>(null);
   const [buddyStatus, setBuddyStatus] = useState<"self" | "buddy" | "not_buddy">("not_buddy");
   const [loadingBuddies, setLoadingBuddies] = useState(true);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [actionUserId, setActionUserId] = useState<number | null>(null);
@@ -130,15 +137,20 @@ export default function FindReaders() {
 
     async function loadPageData() {
       setLoadingBuddies(true);
+      setLoadingRecommendations(true);
       setError("");
 
       try {
         const user = await fetchCurrentUser();
-        const buddyRelationships = await fetchBuddies(user.id);
+        const [buddyRelationships, buddyRecommendations] = await Promise.all([
+          fetchBuddies(user.id),
+          fetchBuddyRecommendations(),
+        ]);
 
         if (!cancelled) {
           setCurrentUserId(user.id);
           setBuddies(buddyRelationships);
+          setRecommendations(buddyRecommendations);
         }
       } catch (requestError) {
         if (!cancelled) {
@@ -151,6 +163,7 @@ export default function FindReaders() {
       } finally {
         if (!cancelled) {
           setLoadingBuddies(false);
+          setLoadingRecommendations(false);
         }
       }
     }
@@ -251,6 +264,23 @@ export default function FindReaders() {
   }, [buddies, currentUserId, searchResult]);
 
   const buddyCards = useMemo(() => buddies.map((relationship) => relationship.buddy), [buddies]);
+  const buddyIds = useMemo(() => new Set(buddyCards.map((buddy) => buddy.id)), [buddyCards]);
+  const recommendedReaders = useMemo(
+    () =>
+      recommendations.filter((recommendation) => {
+        const user = recommendation.to_user;
+        if (!user || !user.id) {
+          return false;
+        }
+
+        if (currentUserId !== null && user.id === currentUserId) {
+          return false;
+        }
+
+        return !buddyIds.has(user.id);
+      }),
+    [buddyIds, currentUserId, recommendations],
+  );
 
   const heading = hasSearchQuery ? "Search Result" : "Your Book Buddies";
   const subtitle = hasSearchQuery
@@ -291,6 +321,19 @@ export default function FindReaders() {
 
   const showSearchState = hasSearchQuery;
 
+  const formatMatchNote = (score?: number | null) => {
+    if (typeof score !== "number") {
+      return undefined;
+    }
+
+    const percentage = Math.max(
+      0,
+      Math.min(100, score <= 1 ? Math.round(score * 100) : Math.round(score)),
+    );
+
+    return `${percentage}% taste match`;
+  };
+
   return (
     <div className="find-readers-page">
       <Navbar />
@@ -320,6 +363,53 @@ export default function FindReaders() {
       </section>
 
       <main className="find-readers-shell find-readers-main">
+        {!showSearchState ? (
+          <section className="find-readers-results">
+            <div className="find-readers-results__header">
+              <div>
+                <h2 className="find-readers-results__title">Readers You May Like</h2>
+                <p className="find-readers-results__subtitle">
+                  Suggested buddies based on similar reading taste.
+                </p>
+              </div>
+              <p className="find-readers-results__count">
+                {recommendedReaders.length} recommendation
+                {recommendedReaders.length === 1 ? "" : "s"}
+              </p>
+            </div>
+
+            {loadingRecommendations ? (
+              <div className="readers-grid" aria-hidden="true">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div key={index} className="reader-card reader-card--skeleton" />
+                ))}
+              </div>
+            ) : null}
+
+            {!loadingRecommendations && recommendedReaders.length > 0 ? (
+              <div className="readers-grid">
+                {recommendedReaders.map((recommendation) => (
+                  <ReaderCard
+                    key={recommendation.id}
+                    user={recommendation.to_user}
+                    status="not_buddy"
+                    note={formatMatchNote(recommendation.score)}
+                    actionLoading={actionUserId === recommendation.to_user.id}
+                    onToggleBuddy={handleToggleBuddy}
+                  />
+                ))}
+              </div>
+            ) : null}
+
+            {!loadingRecommendations && recommendedReaders.length === 0 && !error ? (
+              <div className="find-readers-state">
+                <p>No buddy recommendations yet.</p>
+                <p>Rate more books to help LuckyReads find stronger reading matches.</p>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+
         <section className="find-readers-results">
           <div className="find-readers-results__header">
             <div>
@@ -351,6 +441,7 @@ export default function FindReaders() {
                 user={searchResult}
                 status={buddyStatus}
                 actionLoading={actionUserId === searchResult.id}
+                note={undefined}
                 onToggleBuddy={handleToggleBuddy}
               />
             </div>
@@ -378,6 +469,7 @@ export default function FindReaders() {
                   user={buddy}
                   status="buddy"
                   actionLoading={actionUserId === buddy.id}
+                  note={undefined}
                   onToggleBuddy={handleToggleBuddy}
                 />
               ))}
