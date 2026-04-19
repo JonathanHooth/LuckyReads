@@ -221,6 +221,7 @@ export default function MyShelf() {
                             author={book.author}
                             coverUrl={book.coverUrl}
                             status={book.status}
+                            rating={book.rating}
                             onStatusChange={(newStatus) =>
                                 handleStatusChange(book.id, newStatus)
                             }
