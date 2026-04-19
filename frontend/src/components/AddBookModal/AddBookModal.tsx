@@ -99,11 +99,6 @@ export default function AddBookModal(props: AddBookModalProps) {
                                     alt={`${result.cover_url} cover`}
                                 />
                             </div>
-                            {/* <img
-                                className="search-result-cover"
-                                src={result.cover_url || "placeholder"}
-                                alt={`${result.title} cover`}
-                            /> */}
                             <div className="search-result-info">
                                 <h3 className="search-result-title">
                                     {result.title}
