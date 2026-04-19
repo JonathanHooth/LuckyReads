@@ -33,11 +33,6 @@ export default function BookCard(props: BookCardProps) {
     }
     return (
         <div className="book-card">
-            {/* <img
-                className="book-card-cover"
-                src={props.coverUrl || "placeholder"}
-                alt={`${props.title} cover`}
-            /> */}
             <div className="book-card-cover-wrapper">
                 <img
                     className="book-card-cover-bg"
