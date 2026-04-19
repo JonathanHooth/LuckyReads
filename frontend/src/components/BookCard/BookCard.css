@@ -100,7 +100,6 @@
     border: none;
     border-radius: 999px;
     padding: 8px 12px;
-
     font-size: 14px;
     cursor: pointer;
     line-height: 1;
@@ -115,4 +114,29 @@
     margin-top: auto;
     border-radius: 12px;
     background-color: #efe8dc;
+}
+
+.book-card-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 2px solid #efe8dc;
+    background: #3f4a34;
+    color: #efe8dc;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.book-card-delete-icon {
+    display: inline-block;
+    line-height: 1;
+    transform: translateY(-2px);
 }
