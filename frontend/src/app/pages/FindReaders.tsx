@@ -62,27 +62,22 @@ function ReaderCard({
   onToggleBuddy: (user: PublicUser, isBuddy: boolean) => void;
 }) {
   const displayName = getDisplayName(user);
-  const badge =
-    status === "self"
-      ? "You"
-      : status === "buddy"
-        ? "Already buddies"
-        : "Not buddies yet";
   const buttonLabel =
     status === "self" ? "This is you" : status === "buddy" ? "Remove buddy" : "Add buddy";
   const disabled = status === "self" || actionLoading;
 
   return (
     <article className="reader-card">
-      <div className="reader-card__avatar">{getInitials(user)}</div>
-      <div className="reader-card__body">
-        <p className="reader-card__eyebrow">@{user.username}</p>
-        <h3 className="reader-card__name">{displayName}</h3>
-        <p className="reader-card__status">{badge}</p>
-        {note ? <p className="reader-card__note">{note}</p> : null}
-        <p className="reader-card__bio">
-          {user.bio?.trim() || "This reader has not added a bio yet."}
-        </p>
+      <div className="reader-card__content">
+        <div className="reader-card__avatar">{getInitials(user)}</div>
+        <div className="reader-card__body">
+          <p className="reader-card__eyebrow">@{user.username}</p>
+          <h3 className="reader-card__name">{displayName}</h3>
+          {note ? <p className="reader-card__note">{note}</p> : null}
+          <p className="reader-card__bio">
+            {user.bio?.trim() || "This reader has not added a bio yet."}
+          </p>
+        </div>
       </div>
       <button
         type="button"
