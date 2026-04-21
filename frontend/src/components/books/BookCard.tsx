@@ -22,19 +22,11 @@ export default function BookCard({ book, onClick }: BookCardProps) {
         >
             <div className="home-book-card__media">
                 {book.coverUrl ? (
-                    <>
-                        <img
-                            className="home-book-card__image-bg"
-                            src={book.coverUrl}
-                            alt=""
-                            aria-hidden="true"
-                        />
-                        <img
-                            className="home-book-card__image"
-                            src={book.coverUrl}
-                            alt={`Cover of ${book.title}`}
-                        />
-                    </>
+                    <img
+                        className="home-book-card__image"
+                        src={book.coverUrl}
+                        alt={`Cover of ${book.title}`}
+                    />
                 ) : (
                     <div
                         className="home-book-card__image home-book-card__image--fallback"
