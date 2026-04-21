@@ -6,15 +6,18 @@ export const mockSearchResults: DisplayBook[] = [
         title: "Hello Beautiful",
         author: "Ann Napolitano",
         coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1675638895i/61771675.jpg",
+        openlibrary_key: ""
     },
     {
         id: "mock-search-2",
         title: "The Hello Girls",
         author: "Brittney Morris",
+        openlibrary_key: ""
     },
     {
         id: "mock-search-3",
         title: "Hello Stranger",
         author: "Katherine Center",
+        openlibrary_key: ""
     },
 ];

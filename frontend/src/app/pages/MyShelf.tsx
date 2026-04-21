@@ -8,7 +8,6 @@ import RatingModal from "../../components/RatingModal/RatingModal";
 import BookDetail, {
     type BookDetailData,
 } from "../../components/BookDetail/BookDetail";
-import { fetchBookDetail } from "../../services/books";
 
 type BookStatus = "want_to_read" | "currently_reading" | "read";
 type ShelfFilter = "all" | BookStatus;

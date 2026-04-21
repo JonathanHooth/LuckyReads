@@ -7,6 +7,7 @@ export const mockRecommendations: DisplayBook[] = [
         author: "Harper Lee",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780060935467-M.jpg",
         matchPercentage: 94,
+        openlibrary_key: ""
     },
     {
         id: "mock-rec-2",
@@ -14,6 +15,7 @@ export const mockRecommendations: DisplayBook[] = [
         author: "Jane Austen",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780141439518-M.jpg",
         matchPercentage: 91,
+        openlibrary_key: ""
     },
     {
         id: "mock-rec-3",
@@ -21,6 +23,7 @@ export const mockRecommendations: DisplayBook[] = [
         author: "C.S. Lewis",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780064404990-M.jpg",
         matchPercentage: 88,
+        openlibrary_key: ""
     },
     {
         id: "mock-rec-4",
@@ -28,6 +31,7 @@ export const mockRecommendations: DisplayBook[] = [
         author: "Neil Gaiman, Terry Pratchett",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780060853983-M.jpg",
         matchPercentage: 86,
+        openlibrary_key: ""
     },
     {
         id: "mock-rec-5",
@@ -35,6 +39,7 @@ export const mockRecommendations: DisplayBook[] = [
         author: "Mary Shelley",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9780553212471-M.jpg",
         matchPercentage: 89,
+        openlibrary_key: ""
     },
     {
         id: "mock-rec-6",
@@ -42,5 +47,6 @@ export const mockRecommendations: DisplayBook[] = [
         author: "Toni Morrison",
         coverUrl: "https://covers.openlibrary.org/b/isbn/9781400033416-M.jpg",
         matchPercentage: 93,
+        openlibrary_key: ""
     },
 ];

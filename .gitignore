@@ -213,3 +213,9 @@ __marimo__/
 # Celery stuff
 celerybeat-schedule
 celerybeat.pid
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
