@@ -76,7 +76,7 @@ export default function MyShelf() {
             const formattedBooks: ShelfBook[] = shelfEntries.map(
                 (entry: ShelfEntry) => ({
                     id: entry.id,
-                    bookId: entry.book?.id || entry.id,
+                    bookId: entry.book?.id || 0,
                     isbn: entry.book?.isbn || "",
                     title: entry.book?.title || "Unknown title",
                     author:
@@ -199,26 +199,21 @@ export default function MyShelf() {
             isbn: book.isbn,
         });
         setIsBookDetailOpen(true);
-
         try {
-            setIsBookDetailLoading(true);
-            const detail = await fetchBookDetail(String(book.bookId));
-
-            setSelectedDetailBook({
-                id: detail.id,
-                title: detail.title,
-                author: detail.author,
-                coverUrl: detail.coverUrl,
-                rating: detail.rating,
-                genres: detail.genres,
-                isbn: detail.isbn,
-                about: detail.about,
-                reviews: detail.reviews,
-            });
+            const details = await apiClient.get(
+                `/books/${book.bookId}/detail/`,
+            );
+            setSelectedDetailBook((current) => ({
+                ...(current ?? {
+                    id: String(book.id),
+                    title: book.title,
+                    author: book.author,
+                    coverUrl: book.coverUrl,
+                }),
+                ...details.data,
+            }));
         } catch (error) {
-            console.error("Failed to fetch book details:", error);
-        } finally {
-            setIsBookDetailLoading(false);
+            console.error("Failed to fetch book detail:", error);
         }
     }
 
