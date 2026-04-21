@@ -57,13 +57,14 @@ class Command(BaseCommand):
                 username=data['username'],
                 defaults={
                     'email': f'{data['username']}@test.com',
-                    'password': 'password'
-                    }
+                    'password': 'password123',
+                    'bio': data.get('bio', '')
+                }
             )
             if was_created:
-                user.set_password('password')
+                user.set_password('password123')
                 user.save()
-            for book_key, rating in data['ratings'].items():
+            for book_key, (rating, review_text) in data['ratings'].items():
                 shelf_entry, _ = ShelfEntry.objects.get_or_create(
                     user=user,
                     book=books[book_key],
@@ -71,7 +72,10 @@ class Command(BaseCommand):
                 )
                 Review.objects.get_or_create(
                     shelf_entry=shelf_entry,
-                    defaults={'rating': rating}
+                    defaults={
+                        'rating': rating,
+                        'review_text': review_text
+                    }
                 )
             users.append(user)
             self.stdout.write(f'  {user} {"created" if was_created else "skipped"}')
