@@ -29,97 +29,125 @@ BOOKS = [
  
 # Each user entry defines which books they have rated and at what score.
 # Books are referenced by their openlibrary_key for readability.
-# Users with overlapping high ratings will surface as reading buddies.
 USERS = [
     {
         "username": "alice",
+        "bio": "Fantasy and sci-fi obsessive. If it has dragons or spaceships, I'm in.",
         "ratings": {
-            "/works/OL27448W": 5,  # LotR
-            "/works/OL27482W": 5,  # Hobbit
-            "/works/OL59798W":  4,  # Earthsea
-            "/works/OL893415W": 5,  # Dune
+            "/works/OL27448W": (5, "An absolute masterpiece. The world-building is unmatched."),
+            "/works/OL27482W": (5, "Charming and adventurous. A perfect starting point."),
+            "/works/OL59798W": (4, "Beautiful prose, though the pacing drags in the middle."),
+            "/works/OL893415W": (5, "One of the greatest sci-fi novels ever written."),
+            "/works/OL46125W": (2, "Found the characters flat and the plot too convenient."),
+            "/works/OL2172403W": (1, "Couldn't finish it. The alternate history premise never grabbed me."),
         },
     },
     {
         "username": "bob",
+        "bio": "Tolkien scholar in my spare time. I've read The Silmarillion four times.",
         "ratings": {
-            "/works/OL27448W": 5,  # LotR
-            "/works/OL27482W": 4,  # Hobbit
-            "/works/OL27495W": 5,  # Silmarillion
-            "/works/OL59798W":  5,  # Earthsea
-            "/works/OL59800W": 4,  # Left Hand of Darkness
+            "/works/OL27448W": (5, "Tolkien created an entire world. Nothing else comes close."),
+            "/works/OL27482W": (4, "Lighter than LotR but still wonderful."),
+            "/works/OL27495W": (5, "Dense but rewarding. Essential for any Tolkien fan."),
+            "/works/OL59798W": (5, "Le Guin's magic system is so refreshingly understated."),
+            "/works/OL59800W": (4, "Challenging and thought-provoking. Not for everyone."),
+            "/works/OL893415W": (2, "Overhyped. The politics interested me but the writing felt dry."),
         },
     },
     {
         "username": "carol",
+        "bio": "Dune changed my life. Herbert understood ecology before anyone else did.",
         "ratings": {
-            "/works/OL893415W": 5,  # Dune
-            "/works/OL893526W": 5,  # Dune Messiah
-            "/works/OL46125W": 4,  # Foundation
-            "/works/OL27448W": 4,  # LotR
+            "/works/OL893415W": (5, "Dune is a perfect novel. Ecological, political, spiritual."),
+            "/works/OL893526W": (5, "Even better than the first. Paul's fall is devastating."),
+            "/works/OL46125W": (4, "Classic for a reason. Asimov thinks big."),
+            "/works/OL27448W": (4, "Epic and moving, though the appendices lost me."),
+            "/works/OL59863W": (1, "Too dry and philosophical for my taste."),
+            "/works/OL27495W": (2, "Reads more like a history textbook than a novel."),
         },
     },
     {
         "username": "dave",
+        "bio": "Hard sci-fi purist. Give me science and logic over magic any day.",
         "ratings": {
-            "/works/OL46125W": 5,  # Foundation
-            "/works/OL46401W": 5,  # Caves of Steel
-            "/works/OL2172356W": 4,  # Do Androids Dream
-            "/works/OL893415W": 4,  # Dune
+            "/works/OL46125W": (5, "Asimov's vision of history and mathematics is brilliant."),
+            "/works/OL46401W": (5, "A perfect fusion of mystery and science fiction."),
+            "/works/OL2172356W": (4, "Haunting and philosophical. Dick at his best."),
+            "/works/OL893415W": (4, "Deserves every accolade. Took me three attempts to get into it."),
+            "/works/OL59800W": (2, "Appreciated the ideas but found it emotionally cold."),
+            "/works/OL27482W": (1, "Not my genre at all. Felt too whimsical."),
         },
     },
     {
         "username": "eve",
+        "bio": "I read for ideas. Le Guin and Butler are my north stars.",
         "ratings": {
-            "/works/OL59798W":  5,  # Earthsea
-            "/works/OL59800W": 5,  # Left Hand of Darkness
-            "/works/OL59863W": 5,  # Dispossessed
-            "/works/OL27448W": 3,  # LotR (weak signal)
+            "/works/OL59798W": (5, "Le Guin understands humanity better than almost any writer."),
+            "/works/OL59800W": (5, "Changed how I think about gender and society."),
+            "/works/OL59863W": (5, "The best anarchist novel ever written."),
+            "/works/OL27448W": (3, "Impressive but too male-centric for my taste."),
+            "/works/OL893415W": (2, "The female characters are basically props."),
+            "/works/OL46401W": (1, "Dated and unimaginative. Didn't finish it."),
         },
     },
     {
         "username": "frank",
+        "bio": "Philip K. Dick ruined other fiction for me. Nothing else feels as real.",
         "ratings": {
-            "/works/OL2172356W": 5,  # Do Androids Dream
-            "/works/OL2172403W": 5,  # Man in the High Castle
-            "/works/OL46125W": 4,  # Foundation
-            "/works/OL46401W": 3,  # Caves of Steel (weak signal)
+            "/works/OL2172356W": (5, "Dick captures paranoia and identity like no one else."),
+            "/works/OL2172403W": (5, "Unsettling and brilliant. The ending still haunts me."),
+            "/works/OL46125W": (4, "Asimov's ideas are fascinating even if the prose is plain."),
+            "/works/OL46401W": (3, "Good but not as sharp as his other work."),
+            "/works/OL27448W": (2, "I respect it but couldn't connect with it emotionally."),
+            "/works/OL59798W": (1, "Fantasy isn't my thing. Gave it a fair shot."),
         },
     },
     {
         "username": "grace",
+        "bio": "Eclectic reader. I'll try anything once but Dune is always home.",
         "ratings": {
-            "/works/OL893415W": 5,  # Dune
-            "/works/OL893526W": 4,  # Dune Messiah
-            "/works/OL2172356W": 5,  # Do Androids Dream
-            "/works/OL59863W": 4,  # Dispossessed
+            "/works/OL893415W": (5, "Perfect in every way. My favourite book."),
+            "/works/OL893526W": (4, "Darker and stranger than Dune. I loved it."),
+            "/works/OL2172356W": (5, "Dick's most accessible and most devastating novel."),
+            "/works/OL59863W": (4, "Slow but deeply rewarding."),
+            "/works/OL27495W": (2, "Too much lore, not enough story."),
+            "/works/OL46401W": (1, "Felt like a lesser Asimov. Skipped to the ending."),
         },
     },
     {
         "username": "henry",
+        "bio": "Reading my way through the Hugo Award winners. Halfway there.",
         "ratings": {
-            "/works/OL27448W": 4,  # LotR
-            "/works/OL46125W": 5,  # Foundation
-            "/works/OL893415W": 5,  # Dune
-            "/works/OL2172403W": 4,  # Man in the High Castle
+            "/works/OL27448W": (4, "A monument of literature. Slow in places but worth it."),
+            "/works/OL46125W": (5, "Asimov makes you feel like the fate of civilisation matters."),
+            "/works/OL893415W": (5, "The ecology and politics are as relevant today as ever."),
+            "/works/OL2172403W": (4, "Creepy and clever. Dick is underrated as a prose stylist."),
+            "/works/OL59863W": (2, "The ideas are interesting but the story bored me."),
+            "/works/OL59800W": (1, "Too abstract. I couldn't stay engaged."),
         },
     },
     {
         "username": "iris",
+        "bio": "Feminist sci-fi is my genre. Le Guin, Butler, Atwood -- that's my shelf.",
         "ratings": {
-            "/works/OL59800W": 5,  # Left Hand of Darkness
-            "/works/OL59863W": 5,  # Dispossessed
-            "/works/OL2172356W": 4,  # Do Androids Dream
-            "/works/OL46401W": 4,  # Caves of Steel
+            "/works/OL59800W": (5, "One of the most important books I have ever read."),
+            "/works/OL59863W": (5, "Utopian fiction done right. Challenging and hopeful."),
+            "/works/OL2172356W": (4, "Bleak but brilliant. Dick doesn't pull punches."),
+            "/works/OL46401W": (4, "Smart detective fiction with real ideas behind it."),
+            "/works/OL893415W": (2, "The hype didn't match my experience."),
+            "/works/OL27448W": (1, "Not for me. Too long and too male."),
         },
     },
     {
         "username": "jack",
+        "bio": "Tolkien completionist. Currently learning Quenya.",
         "ratings": {
-            "/works/OL27495W": 5,  # Silmarillion
-            "/works/OL27482W": 5,  # Hobbit
-            "/works/OL893415W": 4,  # Dune
-            "/works/OL46125W": 4,  # Foundation
+            "/works/OL27495W": (5, "The most ambitious thing Tolkien wrote."),
+            "/works/OL27482W": (5, "Cosy and magical. My comfort read."),
+            "/works/OL893415W": (4, "Deserves its reputation. Dense but gripping."),
+            "/works/OL46125W": (4, "Asimov thinks on a civilisational scale. Impressive."),
+            "/works/OL2172356W": (2, "Too bleak and meandering for me."),
+            "/works/OL59863W": (1, "Philosophy dressed up as fiction. Not my thing."),
         },
     },
 ]
