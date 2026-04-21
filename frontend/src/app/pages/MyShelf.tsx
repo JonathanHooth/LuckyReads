@@ -8,6 +8,7 @@ import RatingModal from "../../components/RatingModal/RatingModal";
 import BookDetail, {
     type BookDetailData,
 } from "../../components/BookDetail/BookDetail";
+import { fetchBookDetail } from "../../services/books";
 
 type BookStatus = "want_to_read" | "currently_reading" | "read";
 type ShelfFilter = "all" | BookStatus;
@@ -21,6 +22,7 @@ type SearchResult = {
 
 type ShelfBook = {
     id: number;
+    bookId: number;
     isbn: string;
     title: string;
     author: string;
@@ -34,6 +36,7 @@ type ShelfEntry = {
     id: number;
     status: BookStatus;
     book?: {
+        id: number;
         isbn: string;
         title: string;
         authors?: { name: string }[];
@@ -56,6 +59,7 @@ export default function MyShelf() {
     const [selectedDetailBook, setSelectedDetailBook] =
         useState<BookDetailData | null>(null);
     const [isBookDetailOpen, setIsBookDetailOpen] = useState(false);
+    const [isBookDetailLoading, setIsBookDetailLoading] = useState(false);
 
     useEffect(() => {
         fetchShelf();
@@ -72,6 +76,7 @@ export default function MyShelf() {
             const formattedBooks: ShelfBook[] = shelfEntries.map(
                 (entry: ShelfEntry) => ({
                     id: entry.id,
+                    bookId: entry.book?.id || entry.id,
                     isbn: entry.book?.isbn || "",
                     title: entry.book?.title || "Unknown title",
                     author:
@@ -185,14 +190,36 @@ export default function MyShelf() {
             ? books
             : books.filter((book) => book.status === activeTab);
 
-    function handleBookClick(book: ShelfBook) {
+    async function handleBookClick(book: ShelfBook) {
         setSelectedDetailBook({
-            id: String(book.id),
+            id: String(book.bookId),
             title: book.title,
             author: book.author,
             coverUrl: book.coverUrl,
+            isbn: book.isbn,
         });
         setIsBookDetailOpen(true);
+
+        try {
+            setIsBookDetailLoading(true);
+            const detail = await fetchBookDetail(String(book.bookId));
+
+            setSelectedDetailBook({
+                id: detail.id,
+                title: detail.title,
+                author: detail.author,
+                coverUrl: detail.coverUrl,
+                rating: detail.rating,
+                genres: detail.genres,
+                isbn: detail.isbn,
+                about: detail.about,
+                reviews: detail.reviews,
+            });
+        } catch (error) {
+            console.error("Failed to fetch book details:", error);
+        } finally {
+            setIsBookDetailLoading(false);
+        }
     }
 
     return (
@@ -276,7 +303,11 @@ export default function MyShelf() {
                 <BookDetail
                     book={selectedDetailBook}
                     isOpen={isBookDetailOpen}
-                    onClose={() => setIsBookDetailOpen(false)}
+                    onClose={() => {
+                        setIsBookDetailOpen(false);
+                        setIsBookDetailLoading(false);
+                    }}
+                    isLoading={isBookDetailLoading}
                 />
             )}
         </div>

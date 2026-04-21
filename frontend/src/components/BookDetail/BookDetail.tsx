@@ -35,16 +35,16 @@ interface BookDetailProps {
     book: BookDetailData;
     onClose: () => void;
     onAddToShelf?: (bookId: string) => void;
-    onWriteReview?: (bookId: string) => void;
     isOpen: boolean;
+    isLoading?: boolean;
 }
 
 export default function BookDetail({
     book,
     onClose,
     onAddToShelf,
-    onWriteReview,
     isOpen,
+    isLoading = false,
 }: BookDetailProps) {
     if (!isOpen) return null;
 
@@ -89,12 +89,6 @@ export default function BookDetail({
                             >
                                 Add to Shelf
                             </button>
-                            <button
-                                className="book-detail-btn book-detail-btn--secondary"
-                                onClick={() => onWriteReview?.(book.id)}
-                            >
-                                Write Review
-                            </button>
                         </div>
                     </div>
 
@@ -108,14 +102,16 @@ export default function BookDetail({
 
                         {/* Rating and Match */}
                         <div className="book-detail-meta-top">
-                            {book.rating && (
-                                <div className="book-detail-rating">
-                                    <span className="rating-value">
-                                        {book.rating}
-                                    </span>
-                                    <span className="rating-stars">★★★★☆</span>
-                                </div>
-                            )}
+                            <div className="book-detail-rating">
+                                <span className="rating-value">
+                                    {typeof book.rating === "number" ? book.rating : "-"}
+                                </span>
+                                <span className="rating-stars">
+                                    {typeof book.rating === "number"
+                                        ? `${"★".repeat(Math.round(book.rating))}${"☆".repeat(5 - Math.round(book.rating))}`
+                                        : "No ratings yet"}
+                                </span>
+                            </div>
                             {book.matchPercentage && (
                                 <div className="book-detail-match">
                                     {book.matchPercentage}% match for your
@@ -124,19 +120,16 @@ export default function BookDetail({
                             )}
                         </div>
 
-                        {/* Genres */}
-                        {book.genres && book.genres.length > 0 && (
-                            <div className="book-detail-genres">
-                                {book.genres.map((genre) => (
-                                    <span key={genre} className="genre-badge">
-                                        {genre}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
                         {/* Book Info */}
                         <div className="book-detail-info">
+                            <div className="info-item">
+                                <span className="info-label">Genres:</span>
+                                <span className="info-value">
+                                    {book.genres && book.genres.length > 0
+                                        ? book.genres.slice(0, 3).join(", ")
+                                        : "Not available"}
+                                </span>
+                            </div>
                             {book.pages && (
                                 <div className="info-item">
                                     <span className="info-label">Pages:</span>
@@ -153,28 +146,30 @@ export default function BookDetail({
                                     </span>
                                 </div>
                             )}
-                            {book.isbn && (
-                                <div className="info-item">
-                                    <span className="info-label">ISBN:</span>
-                                    <span className="info-value">
-                                        {book.isbn}
-                                    </span>
-                                </div>
-                            )}
+                            <div className="info-item">
+                                <span className="info-label">ISBN:</span>
+                                <span className="info-value">
+                                    {book.isbn?.trim() || "Not available"}
+                                </span>
+                            </div>
                         </div>
 
                         {/* About */}
-                        {book.about && (
-                            <div className="book-detail-section">
-                                <h2 className="section-title">About this book</h2>
-                                <p className="section-content">{book.about}</p>
-                            </div>
-                        )}
+                        <div className="book-detail-section">
+                            <h2 className="section-title">About this book</h2>
+                            <p className="section-content">
+                                {isLoading
+                                    ? "Loading summary..."
+                                    : (book.about?.trim() || "No summary available for this book yet.")}
+                            </p>
+                        </div>
 
                         {/* Reviews */}
-                        {book.reviews && book.reviews.length > 0 && (
-                            <div className="book-detail-section">
-                                <h2 className="section-title">Reviews</h2>
+                        <div className="book-detail-section">
+                            <h2 className="section-title">Reviews</h2>
+                            {isLoading ? (
+                                <p className="section-content">Loading reviews...</p>
+                            ) : book.reviews && book.reviews.length > 0 ? (
                                 <div className="reviews-list">
                                     {book.reviews.map((review) => (
                                         <div
@@ -195,8 +190,10 @@ export default function BookDetail({
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <p className="section-content">No reviews yet.</p>
+                            )}
+                        </div>
 
                         {/* Similar Books */}
                         {book.similarBooks && book.similarBooks.length > 0 && (
