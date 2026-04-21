@@ -1,4 +1,5 @@
 import requests
+import re
 from django.core.exceptions import PermissionDenied
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -110,6 +111,62 @@ class BookDetailView(APIView):
             return ""
         return openlibrary_key if openlibrary_key.startswith("/") else f"/{openlibrary_key}"
 
+    def _format_genre_label(self, raw_subject: str) -> str:
+        label = raw_subject.strip()
+        label = re.sub(r"[_/]+", " ", label)
+        label = re.sub(r"\s+", " ", label)
+        return label.title()
+
+    def _is_english_genre(self, subject: str) -> bool:
+        if not subject:
+            return False
+
+        # Keep genres readable and avoid obvious non-English labels.
+        if not subject.isascii():
+            return False
+
+        lowered = subject.lower()
+        blocked_terms = {
+            "novela",
+            "ficcion",
+            "espanol",
+            "espanola",
+            "literatura",
+            "poesia",
+            "cuento",
+            "cuentos",
+            "juvenil",
+            "infantil",
+        }
+        return not any(term in lowered for term in blocked_terms)
+
+    def _extract_readable_genres(self, subjects: list) -> list[str]:
+        readable_genres = []
+        seen = set()
+
+        for subject in subjects:
+            if not isinstance(subject, str):
+                continue
+
+            if not self._is_english_genre(subject):
+                continue
+
+            label = self._format_genre_label(subject)
+            if not label:
+                continue
+
+            key = label.lower()
+            if key in seen:
+                continue
+
+            seen.add(key)
+            readable_genres.append(label)
+
+            if len(readable_genres) >= 8:
+                break
+
+        return readable_genres
+
     def _fetch_openlibrary_metadata(self, book: Book) -> dict:
         default_data = {
             "about": "",
@@ -135,7 +192,7 @@ class BookDetailView(APIView):
             about = description.get("value", "") if isinstance(description, dict) else description
 
             subjects = work_data.get("subjects", [])
-            genres = [subject for subject in subjects if isinstance(subject, str)][:8]
+            genres = self._extract_readable_genres(subjects)
 
             isbn = book.isbn or ""
             if not isbn and work_data.get("key"):

@@ -35,7 +35,6 @@ interface BookDetailProps {
     book: BookDetailData;
     onClose: () => void;
     onAddToShelf?: (bookId: string) => void;
-    onWriteReview?: (bookId: string) => void;
     isOpen: boolean;
     isLoading?: boolean;
 }
@@ -44,7 +43,6 @@ export default function BookDetail({
     book,
     onClose,
     onAddToShelf,
-    onWriteReview,
     isOpen,
     isLoading = false,
 }: BookDetailProps) {
@@ -90,12 +88,6 @@ export default function BookDetail({
                                 onClick={() => onAddToShelf?.(book.id)}
                             >
                                 Add to Shelf
-                            </button>
-                            <button
-                                className="book-detail-btn book-detail-btn--secondary"
-                                onClick={() => onWriteReview?.(book.id)}
-                            >
-                                Write Review
                             </button>
                         </div>
                     </div>
