@@ -53,6 +53,12 @@ export default function BookDetail({
 }: BookDetailProps) {
     if (!isOpen) return null;
 
+    const [added, setAdded] = React.useState(false);
+
+    React.useEffect(() => {
+        setAdded(false);
+    }, [book.id]);
+
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
             onClose();
@@ -90,9 +96,13 @@ export default function BookDetail({
                             <div className="book-detail-actions">
                                 <button
                                     className="book-detail-btn book-detail-btn--primary"
-                                    onClick={() => onAddToShelf(book)}
+                                    onClick={async () => {
+                                        await onAddToShelf?.(book);
+                                        setAdded(true);
+                                    }}
+                                    disabled={added}
                                 >
-                                    Add to Shelf
+                                    {added ? "Added to Shelf" : "Add to Shelf"}
                                 </button>
                             </div>
                         )}
