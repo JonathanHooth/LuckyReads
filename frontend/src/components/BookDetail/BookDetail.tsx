@@ -120,17 +120,6 @@ export default function BookDetail({
                             )}
                         </div>
 
-                        {/* Genres */}
-                        {book.genres && book.genres.length > 0 && (
-                            <div className="book-detail-genres">
-                                {book.genres.map((genre) => (
-                                    <span key={genre} className="genre-badge">
-                                        {genre}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
                         {/* Book Info */}
                         <div className="book-detail-info">
                             <div className="info-item">
